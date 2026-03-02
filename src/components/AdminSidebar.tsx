@@ -51,20 +51,20 @@ export function AdminSidebar() {
           {!collapsed && (
             <div className="flex items-center gap-3">
               <div
-                className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg flex-shrink-0 font-bold text-white text-base"
+                className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg flex-shrink-0 text-white"
                 style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
               >
-                H
+                <Stethoscope size={20} />
               </div>
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
           )}
           {collapsed && (
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg mx-auto font-bold text-white text-base"
+              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg mx-auto text-white"
               style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
             >
-              H
+              <Stethoscope size={20} />
             </div>
           )}
         </div>
