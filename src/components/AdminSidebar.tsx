@@ -7,7 +7,6 @@ import {
   Package,
   BarChart2,
   LogOut,
-  Cross,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -52,30 +51,20 @@ export function AdminSidebar() {
           {!collapsed && (
             <div className="flex items-center gap-3">
               <div
-                className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg flex-shrink-0"
+                className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg flex-shrink-0 font-bold text-white text-base"
                 style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
               >
-                <div
-                  className="flex h-full w-full items-center justify-center rounded-full"
-                  style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
-                >
-                  <Cross className="h-4 w-4 text-white" />
-                </div>
+                H
               </div>
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
           )}
           {collapsed && (
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg mx-auto"
+              className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg mx-auto font-bold text-white text-base"
               style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
             >
-              <div
-                className="flex h-full w-full items-center justify-center rounded-full"
-                style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
-              >
-                <Cross className="h-4 w-4 text-white" />
-              </div>
+              H
             </div>
           )}
         </div>
