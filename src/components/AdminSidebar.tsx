@@ -7,6 +7,7 @@ import {
   Package,
   BarChart2,
   LogOut,
+  Cross,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -49,16 +50,32 @@ export function AdminSidebar() {
       <SidebarContent>
         <div className="px-4 py-5">
           {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-teal-400 text-sidebar-primary-foreground font-bold text-sm shadow-lg">
-                H
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
+              >
+                <div
+                  className="flex h-full w-full items-center justify-center rounded-full"
+                  style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
+                >
+                  <Cross className="h-4 w-4 text-white" />
+                </div>
               </div>
-              <span className="font-semibold text-sidebar-foreground">HamshiraGo</span>
+              <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
           )}
           {collapsed && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-teal-400 text-sidebar-primary-foreground font-bold text-sm mx-auto shadow-lg">
-              H
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-full shadow-lg mx-auto"
+              style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
+            >
+              <div
+                className="flex h-full w-full items-center justify-center rounded-full"
+                style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
+              >
+                <Cross className="h-4 w-4 text-white" />
+              </div>
             </div>
           )}
         </div>
