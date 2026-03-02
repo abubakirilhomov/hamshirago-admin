@@ -4,7 +4,7 @@ import { adminLogin } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Login = () => {
@@ -32,20 +32,29 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen flex-col items-center justify-start bg-background">
+      {/* Gradient header — same as web/web-medic */}
+      <div
+        className="w-full flex flex-col items-center pt-16 pb-12 px-4"
+        style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
+      >
+        <div
+          className="flex h-[72px] w-[72px] items-center justify-center rounded-full mb-3"
+          style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+        >
+          <Stethoscope className="h-9 w-9 text-white" />
+        </div>
+        <h1 className="text-[26px] font-bold text-white">HamshiraGo</h1>
+        <p className="text-[15px] mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
+          Панель администратора
+        </p>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm space-y-8 px-4"
+        className="w-full max-w-sm space-y-8 px-4 -mt-6 bg-background rounded-t-2xl pt-8 flex-1"
       >
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Shield className="h-7 w-7 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold">HamshiraGo</h1>
-          <p className="text-sm text-muted-foreground">Админ-панель</p>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Логин</Label>
