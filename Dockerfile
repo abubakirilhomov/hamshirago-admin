@@ -2,9 +2,8 @@ FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-ARG CACHEBUST=20260303b
 COPY . .
 RUN npm run build
-RUN npm install -g serve
+RUN npm install -g http-server
 EXPOSE 3000
-CMD sh -c "serve dist -l ${PORT:-3000}"
+CMD sh -c "http-server dist -p ${PORT:-3000} -a 0.0.0.0 --proxy http://0.0.0.0:${PORT:-3000}?"

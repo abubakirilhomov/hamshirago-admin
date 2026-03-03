@@ -2,5 +2,5 @@
 buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "npx serve@latest dist --listen tcp://0.0.0.0:$PORT"
+startCommand = "http-server dist -p ${PORT:-3000} -a 0.0.0.0"
 restartPolicyType = "ON_FAILURE"
