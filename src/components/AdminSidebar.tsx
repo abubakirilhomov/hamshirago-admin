@@ -47,8 +47,8 @@ export function AdminSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border dark:border-white/10 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950/95 backdrop-blur-md">
       <SidebarContent>
-        <div className="px-4 py-5">
-          {!collapsed && (
+        {!collapsed && (
+          <div className="px-4 py-5">
             <div className="flex items-center gap-3">
               <div
                 className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg flex-shrink-0 text-white"
@@ -58,16 +58,8 @@ export function AdminSidebar() {
               </div>
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
-          )}
-          {collapsed && (
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg mx-auto text-white"
-              style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-            >
-              <Stethoscope size={20} />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel>Навигация</SidebarGroupLabel>
