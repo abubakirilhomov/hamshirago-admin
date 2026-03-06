@@ -1,4 +1,4 @@
-export const API_BASE = "https://hamshirago-production-0a65.up.railway.app";
+export const API_BASE = import.meta.env.VITE_API_URL as string ?? "https://hamshirago-production-0a65.up.railway.app";
 export const WS_URL = API_BASE;
 
 // ── Types ──────────────────────────────────────────────────────────────────────
