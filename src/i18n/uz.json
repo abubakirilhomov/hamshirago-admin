@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "dashboard": "Boshqaruv paneli",
+    "verification": "Tekshirish",
+    "medics": "Hamshiralar",
+    "clients": "Mijozlar",
+    "orders": "Buyurtmalar",
+    "services": "Xizmatlar",
+    "reports": "Hisobotlar",
+    "logout": "Chiqish"
+  },
+  "login": {
+    "title": "Administrator paneli",
+    "username": "Login",
+    "password": "Parol",
+    "submit": "Kirish",
+    "loggingIn": "Kirish...",
+    "errorInvalid": "Login yoki parol noto'g'ri",
+    "errorServer": "Server xatosi. Keyinroq urinib ko'ring."
+  },
+  "dashboard": {
+    "title": "Boshqaruv paneli",
+    "ordersToday": "Bugungi buyurtmalar",
+    "revenue": "Daromad",
+    "activeMedics": "Faol hamshiralar",
+    "newClients": "Yangi mijozlar",
+    "totalOrders": "Jami buyurtmalar",
+    "done": "Bajarildi",
+    "canceled": "Bekor qilindi",
+    "pendingVerif": "Tekshirish kutilmoqda",
+    "platformRevenue": "Platforma daromadi",
+    "successOrders": "Muvaffaqiyatli buyurtmalar",
+    "last7Days": "So'nggi 7 kundagi buyurtmalar",
+    "efficiency": "Samaradorlik",
+    "orderFlow": "Buyurtmalar oqimi holati",
+    "inProgress": "Jarayonda",
+    "financialFocus": "Moliyaviy ko'rsatkich",
+    "finRevenue": "Bajarilgan buyurtmalar bo'yicha platforma daromadi"
+  },
+  "verification": {
+    "title": "Hamshiralarni tekshirish",
+    "pending": "Ko'rib chiqilmoqda",
+    "approve": "Tasdiqlash",
+    "reject": "Rad etish",
+    "name": "Ism",
+    "phone": "Telefon",
+    "experience": "Tajriba",
+    "years": "yil",
+    "docs": "Hujjatlar",
+    "empty": "Tekshirish so'rovlari yo'q"
+  },
+  "orders": {
+    "title": "Buyurtmalar",
+    "id": "ID",
+    "client": "Mijoz",
+    "medic": "Hamshira",
+    "service": "Xizmat",
+    "status": "Holat",
+    "price": "Narx",
+    "date": "Sana",
+    "empty": "Buyurtmalar yo'q",
+    "status_values": {
+      "CREATED": "Yaratildi",
+      "ASSIGNED": "Tayinlandi",
+      "ACCEPTED": "Qabul qilindi",
+      "ON_THE_WAY": "Yo'lda",
+      "ARRIVED": "Yetib keldi",
+      "SERVICE_STARTED": "Boshlandi",
+      "DONE": "Bajarildi",
+      "CANCELED": "Bekor qilindi"
+    }
+  },
+  "medics": {
+    "title": "Hamshiralar",
+    "name": "Ism",
+    "phone": "Telefon",
+    "status": "Holat",
+    "rating": "Reyting",
+    "orders": "Buyurtmalar",
+    "block": "Bloklash",
+    "unblock": "Blokdan chiqarish",
+    "empty": "Hamshiralar yo'q"
+  },
+  "clients": {
+    "title": "Mijozlar",
+    "name": "Ism",
+    "phone": "Telefon",
+    "orders": "Buyurtmalar",
+    "block": "Bloklash",
+    "unblock": "Blokdan chiqarish",
+    "empty": "Mijozlar yo'q"
+  },
+  "services": {
+    "title": "Xizmatlar",
+    "name": "Nomi",
+    "nameUz": "Nomi (UZ)",
+    "category": "Kategoriya",
+    "categoryUz": "Kategoriya (UZ)",
+    "price": "Narx",
+    "active": "Faol",
+    "add": "Xizmat qo'shish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "empty": "Xizmatlar yo'q"
+  },
+  "language": { "title": "Язык / Til" },
+  "common": {
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik",
+    "retry": "Qayta urinish",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "sum": "so'm",
+    "search": "Qidirish",
+    "install": "O'rnatish",
+    "installApp": "Tez kirish uchun ilovani o'rnating"
+  }
+}

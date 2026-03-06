@@ -1,0 +1,106 @@
+{
+  "nav": {
+    "dashboard": "Дашборд",
+    "verification": "Верификация",
+    "medics": "Медики",
+    "clients": "Клиенты",
+    "orders": "Заказы",
+    "services": "Услуги",
+    "reports": "Отчёты",
+    "logout": "Выйти"
+  },
+  "login": {
+    "title": "Панель администратора",
+    "username": "Логин",
+    "password": "Пароль",
+    "submit": "Войти",
+    "loggingIn": "Вход...",
+    "errorInvalid": "Неверный логин или пароль",
+    "errorServer": "Ошибка сервера. Попробуйте позже."
+  },
+  "dashboard": {
+    "title": "Дашборд",
+    "ordersToday": "Заказов сегодня",
+    "revenue": "Выручка",
+    "activeMedics": "Активных медиков",
+    "newClients": "Новых клиентов"
+  },
+  "verification": {
+    "title": "Верификация медиков",
+    "pending": "На проверке",
+    "approve": "Подтвердить",
+    "reject": "Отклонить",
+    "name": "Имя",
+    "phone": "Телефон",
+    "experience": "Стаж",
+    "years": "лет",
+    "docs": "Документы",
+    "empty": "Нет заявок на верификацию"
+  },
+  "orders": {
+    "title": "Заказы",
+    "id": "ID",
+    "client": "Клиент",
+    "medic": "Медик",
+    "service": "Услуга",
+    "status": "Статус",
+    "price": "Сумма",
+    "date": "Дата",
+    "empty": "Заказов нет",
+    "status_values": {
+      "CREATED": "Создан",
+      "ASSIGNED": "Назначен",
+      "ACCEPTED": "Принят",
+      "ON_THE_WAY": "В пути",
+      "ARRIVED": "Прибыл",
+      "SERVICE_STARTED": "Начат",
+      "DONE": "Завершён",
+      "CANCELED": "Отменён"
+    }
+  },
+  "medics": {
+    "title": "Медики",
+    "name": "Имя",
+    "phone": "Телефон",
+    "status": "Статус",
+    "rating": "Рейтинг",
+    "orders": "Заказов",
+    "block": "Заблокировать",
+    "unblock": "Разблокировать",
+    "empty": "Медиков нет"
+  },
+  "clients": {
+    "title": "Клиенты",
+    "name": "Имя",
+    "phone": "Телефон",
+    "orders": "Заказов",
+    "block": "Заблокировать",
+    "unblock": "Разблокировать",
+    "empty": "Клиентов нет"
+  },
+  "services": {
+    "title": "Услуги",
+    "name": "Название",
+    "nameUz": "Название (UZ)",
+    "category": "Категория",
+    "categoryUz": "Категория (UZ)",
+    "price": "Цена",
+    "active": "Активна",
+    "add": "Добавить услугу",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "empty": "Услуг нет"
+  },
+  "language": { "title": "Язык / Til" },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "sum": "сум",
+    "search": "Поиск",
+    "install": "Установить",
+    "installApp": "Установите приложение для быстрого доступа к админ-панели"
+  }
+}

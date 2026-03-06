@@ -8,8 +8,33 @@ import { Search, Stethoscope, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useLanguage } from "@/context/LanguageContext";
+import { useTranslation } from "react-i18next";
+
+function LanguageSwitcher() {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <div className="flex gap-1">
+      {(["ru", "uz"] as const).map((lang) => (
+        <button
+          key={lang}
+          onClick={() => setLanguage(lang)}
+          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+            language === lang
+              ? "bg-primary text-white"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          {lang.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+
   if (!hasAdminSecret()) {
     return <Navigate to="/login" replace />;
   }
@@ -30,9 +55,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 <Stethoscope className="h-3.5 w-3.5 text-white" />
               </div>
               <span className="text-sm font-semibold text-foreground">HamshiraGo</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">— Админ</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">— Admin</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Button
                 variant="outline"
@@ -41,7 +67,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
               >
                 <Search className="h-4 w-4" />
-                <span className="hidden sm:inline">Поиск</span>
+                <span className="hidden sm:inline">{t("common.search")}</span>
                 <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
               </Button>
             </div>
@@ -59,6 +85,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 function PWAInstallBanner() {
   const { canInstall, install } = usePWAInstall();
   const [dismissed, setDismissed] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (sessionStorage.getItem("pwa-banner-dismissed")) {
@@ -82,11 +109,11 @@ function PWAInstallBanner() {
         <Stethoscope className="h-3.5 w-3.5 text-white" />
       </div>
       <p className="text-sm text-teal-800 dark:text-teal-200 flex-1">
-        Установите приложение для быстрого доступа к админ-панели
+        {t("common.installApp")}
       </p>
       <Button size="sm" onClick={install} className="gap-1.5 bg-teal-600 hover:bg-teal-700 text-white">
         <Download className="h-3.5 w-3.5" />
-        Установить
+        {t("common.install")}
       </Button>
       <Button size="icon" variant="ghost" className="h-7 w-7 text-teal-600" onClick={handleDismiss}>
         <X className="h-4 w-4" />

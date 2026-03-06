@@ -23,21 +23,23 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-const navItems = [
-  { title: "Дашборд", url: "/", icon: LayoutDashboard },
-  { title: "Верификация", url: "/verification", icon: UserCheck },
-  { title: "Медики", url: "/medics", icon: Stethoscope },
-  { title: "Клиенты", url: "/clients", icon: Users },
-  { title: "Заказы", url: "/orders", icon: ClipboardList },
-  { title: "Услуги", url: "/services", icon: Package },
-  { title: "Отчёты", url: "/reports", icon: BarChart2 },
-];
+import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { key: "dashboard", url: "/", icon: LayoutDashboard },
+    { key: "verification", url: "/verification", icon: UserCheck },
+    { key: "medics", url: "/medics", icon: Stethoscope },
+    { key: "clients", url: "/clients", icon: Users },
+    { key: "orders", url: "/orders", icon: ClipboardList },
+    { key: "services", url: "/services", icon: Package },
+    { key: "reports", url: "/reports", icon: BarChart2 },
+  ];
 
   const handleLogout = () => {
     clearAdminSecret();
@@ -62,11 +64,11 @@ export function AdminSidebar() {
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel>Навигация</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.dashboard") ? "" : "Navigation"}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -75,7 +77,7 @@ export function AdminSidebar() {
                       activeClassName="bg-gradient-to-r from-cyan-500/15 to-teal-500/15 text-teal-700 dark:text-cyan-300 font-medium rounded-md"
                     >
                       <item.icon className="h-4 w-4 mr-2" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(`nav.${item.key}`)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -90,7 +92,7 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="hover:bg-sidebar-accent text-sidebar-foreground rounded-md">
               <LogOut className="h-4 w-4 mr-2" />
-              {!collapsed && <span>Выйти</span>}
+              {!collapsed && <span>{t("nav.logout")}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
