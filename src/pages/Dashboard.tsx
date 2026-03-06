@@ -8,10 +8,18 @@ import {
   UserCheck,
   DollarSign,
   TrendingUp,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+// Лимит для подсчёта дохода — последние N DONE заказов
+const REVENUE_LIMIT = 500;
+// Лимит для 7-дневного графика — последние N всех заказов
+const CHART_LIMIT = 200;
+// Интервал обновления (мс)
+const REFRESH_MS = 120_000;
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -23,10 +31,13 @@ const Dashboard = () => {
     todayOrders: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [dailyOrders, setDailyOrders] = useState<{ day: string; orders: number }[]>([]);
 
   const load = useCallback(async () => {
+    setError(null);
     try {
+      // 4 лёгких запроса — только total (limit=1)
       const [allOrders, doneOrders, canceledOrders, pending] = await Promise.all([
         getOrders(1, 1),
         getOrders(1, 1, "DONE"),
@@ -34,31 +45,32 @@ const Dashboard = () => {
         getPendingMedics(),
       ]);
 
-      // Загружаем ВСЕ страницы DONE заказов параллельно для точного подсчёта дохода
+      // Доход: последние REVENUE_LIMIT DONE заказов (макс 5 страниц по 100)
       let revenue = 0;
       if (doneOrders.total > 0) {
         const PAGE = 100;
-        const totalPages = Math.ceil(doneOrders.total / PAGE);
-        const pages = await Promise.all(
-          Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
-        );
-        revenue = pages
-          .flatMap(p => p.data)
-          .reduce((sum: number, o: AdminOrder) => sum + (o.platformFee || 0), 0);
+        const pagesToFetch = Math.min(Math.ceil(REVENUE_LIMIT / PAGE), Math.ceil(doneOrders.total / PAGE));
+        let revenueOrders: AdminOrder[] = [];
+        for (let i = 1; i <= pagesToFetch; i++) {
+          const res = await getOrders(i, PAGE, "DONE");
+          revenueOrders = revenueOrders.concat(res.data);
+          if (revenueOrders.length >= REVENUE_LIMIT) break;
+        }
+        revenue = revenueOrders.reduce((sum, o) => sum + (o.platformFee || 0), 0);
       }
 
-      // Загружаем страницы пока не дойдём до заказов старше 7 дней (сортировка DESC)
+      // 7-дневный график + сегодня: последние CHART_LIMIT заказов (2 страницы)
+      const today = new Date().toISOString().split("T")[0];
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 7);
-      const today = new Date().toISOString().split("T")[0];
-      const recentData: AdminOrder[] = [];
-      let page = 1;
-      while (true) {
-        const res = await getOrders(page, 100);
-        recentData.push(...res.data);
+      let recentData: AdminOrder[] = [];
+      const PAGE2 = 100;
+      const pagesToScan = Math.min(Math.ceil(CHART_LIMIT / PAGE2), allOrders.totalPages);
+      for (let i = 1; i <= pagesToScan; i++) {
+        const res = await getOrders(i, PAGE2);
+        recentData = recentData.concat(res.data);
         const last = res.data[res.data.length - 1];
-        if (!last || new Date(last.created_at) < cutoff || page >= res.totalPages) break;
-        page++;
+        if (!last || new Date(last.created_at) < cutoff) break;
       }
 
       const todayCount = recentData.filter((o) => o.created_at?.startsWith(today)).length;
@@ -87,7 +99,7 @@ const Dashboard = () => {
         todayOrders: todayCount,
       });
     } catch (e) {
-      console.error("Dashboard load error:", e);
+      setError(e instanceof Error ? e.message : "Ошибка загрузки дашборда");
     } finally {
       setLoading(false);
     }
@@ -95,7 +107,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     load();
-    const intervalId = window.setInterval(load, 30_000);
+    const intervalId = window.setInterval(load, REFRESH_MS);
     return () => window.clearInterval(intervalId);
   }, [load]);
 
@@ -140,7 +152,7 @@ const Dashboard = () => {
       value: stats.totalRevenue,
       icon: DollarSign,
       colorClass: "text-teal-700 dark:text-teal-300",
-      description: "Сумма комиссий DONE заказов",
+      description: `Последние ${REVENUE_LIMIT} DONE заказов`,
       formatValue: formatUZS,
       className:
         "bg-gradient-to-br from-teal-50/90 via-white/80 to-emerald-100/80 border-teal-200/60 backdrop-blur-md shadow-[0_20px_40px_-28px_rgba(13,148,136,0.55)] dark:bg-gradient-to-br dark:from-slate-900/90 dark:via-teal-950/40 dark:to-slate-900/90 dark:border-teal-900/40",
@@ -180,6 +192,20 @@ const Dashboard = () => {
       <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-gradient-to-br from-primary/25 to-info/20 dark:from-cyan-700/20 dark:to-indigo-700/20 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-64 h-72 w-72 rounded-full bg-gradient-to-br from-emerald-300/20 to-cyan-300/20 dark:from-emerald-700/20 dark:to-cyan-700/20 blur-3xl" />
 
+      {/* A6: Error banner */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{error}</span>
+          <button
+            onClick={load}
+            className="ml-auto font-medium underline underline-offset-2 hover:no-underline"
+          >
+            Повторить
+          </button>
+        </div>
+      )}
+
       <motion.section
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -192,7 +218,7 @@ const Dashboard = () => {
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Operations Center</p>
             <h1 className="text-3xl font-semibold tracking-tight">HamshiraGo Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground dark:text-slate-300 max-w-2xl">
-              Живая сводка по заказам, доходности и верификации. Данные обновляются автоматически в течение дня.
+              Живая сводка по заказам, доходности и верификации. Данные обновляются каждые 2 минуты.
             </p>
           </div>
           <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/75 p-4 backdrop-blur-md">
@@ -244,7 +270,7 @@ const Dashboard = () => {
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Заказы за последние 7 дней</h2>
-          <span className="status-badge status-created">auto refresh 30s</span>
+          <span className="status-badge status-created">auto refresh 2m</span>
         </div>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">

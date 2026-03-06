@@ -3,8 +3,11 @@ import { getOrders, type AdminOrder } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Download } from "lucide-react";
+import { AlertCircle, Download, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const ORDER_LIMIT = 500;
+const PAGE_SIZE = 100;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -74,25 +77,25 @@ function exportCsv(orders: AdminOrder[], from: string, to: string) {
 const Reports = () => {
   const [allDoneOrders, setAllDoneOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const first = await getOrders(1, 1, "DONE");
-      if (first.total === 0) {
-        setAllDoneOrders([]);
-        return;
+      const collected: AdminOrder[] = [];
+      let page = 1;
+      while (collected.length < ORDER_LIMIT) {
+        const res = await getOrders(page, PAGE_SIZE, "DONE");
+        collected.push(...res.data);
+        if (collected.length >= res.total || page >= res.totalPages) break;
+        page++;
       }
-      const PAGE = 100;
-      const totalPages = Math.ceil(first.total / PAGE);
-      const pages = await Promise.all(
-        Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
-      );
-      setAllDoneOrders(pages.flatMap((p) => p.data));
+      setAllDoneOrders(collected.slice(0, ORDER_LIMIT));
     } catch (e) {
-      console.error("Reports load error:", e);
+      setError(e instanceof Error ? e.message : "Ошибка загрузки отчётов");
     } finally {
       setLoading(false);
     }
@@ -168,6 +171,17 @@ const Reports = () => {
   // ── Main render ─────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
+      {/* Error banner */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 dark:border-red-800/40 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span className="flex-1">{error}</span>
+          <Button size="sm" variant="ghost" onClick={load} className="gap-1.5 text-red-700 dark:text-red-400 hover:text-red-800">
+            <RefreshCw className="h-3.5 w-3.5" /> Повторить
+          </Button>
+        </div>
+      )}
+
       {/* Header + filters */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Финансовые отчёты</h1>
