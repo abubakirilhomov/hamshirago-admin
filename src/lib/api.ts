@@ -117,6 +117,7 @@ export async function adminLogin(username: string, password: string): Promise<vo
   });
 
   if (res.status === 401) throw new Error("Неверный логин или пароль");
+  if (res.status === 429) throw new Error("TOO_MANY_REQUESTS");
   if (!res.ok) throw new Error("Ошибка сервера. Попробуйте позже.");
 
   const data = await res.json() as { access_token: string };

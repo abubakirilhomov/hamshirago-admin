@@ -16,7 +16,8 @@
     "submit": "Kirish",
     "loggingIn": "Kirish...",
     "errorInvalid": "Login yoki parol noto'g'ri",
-    "errorServer": "Server xatosi. Keyinroq urinib ko'ring."
+    "errorServer": "Server xatosi. Keyinroq urinib ko'ring.",
+    "tooManyAttempts": "Ko'p urinish. 15 daqiqadan so'ng urinib ko'ring."
   },
   "dashboard": {
     "title": "Boshqaruv paneli",

@@ -29,7 +29,8 @@ const Login = () => {
       await adminLogin(username.trim(), password);
       navigate("/");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("login.errorServer"));
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg === "TOO_MANY_REQUESTS" ? t("login.tooManyAttempts") : msg || t("login.errorServer"));
     } finally {
       setLoading(false);
     }
