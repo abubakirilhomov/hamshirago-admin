@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAllMedics, blockMedic, type AdminMedic } from "@/lib/api";
+import { getAllMedics, blockMedic, topupMedicWallet, type AdminMedic } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Table,
@@ -14,14 +17,18 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { ShieldAlert, Star, Users, UserCheck, Wifi } from "lucide-react";
+import { ShieldAlert, Star, Users, UserCheck, Wallet, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
+
+const LOW_WALLET_THRESHOLD = 10_000;
 
 const Medics = () => {
   const [medics, setMedics] = useState<AdminMedic[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [onlineFilter, setOnlineFilter] = useState<"ALL" | "ONLINE" | "OFFLINE">("ALL");
+  const [topupTarget, setTopupTarget] = useState<AdminMedic | null>(null);
+  const [topupAmount, setTopupAmount] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -49,6 +56,30 @@ const Medics = () => {
     }
   };
 
+  const handleTopup = async () => {
+    if (!topupTarget) return;
+    const amount = Number(topupAmount);
+    if (!amount || amount <= 0) {
+      toast.error("Введите сумму больше 0");
+      return;
+    }
+    try {
+      await topupMedicWallet(topupTarget.id, amount);
+      setMedics((prev) =>
+        prev.map((m) =>
+          m.id === topupTarget.id
+            ? { ...m, walletBalance: Number(m.walletBalance ?? 0) + amount }
+            : m
+        )
+      );
+      toast.success(`Кошелёк пополнен на ${amount.toLocaleString("ru-RU")} UZS`);
+      setTopupTarget(null);
+      setTopupAmount("");
+    } catch (e) {
+      toast.error("Ошибка при пополнении");
+    }
+  };
+
   const filteredMedics = useMemo(() => {
     const q = search.trim().toLowerCase();
     return medics.filter((m) => {
@@ -67,6 +98,7 @@ const Medics = () => {
   const onlineCount = medics.filter((m) => m.isOnline).length;
   const blockedCount = medics.filter((m) => m.isBlocked).length;
   const approvedCount = medics.filter((m) => m.verificationStatus === "APPROVED").length;
+  const lowWalletCount = medics.filter((m) => Number(m.walletBalance ?? 0) < LOW_WALLET_THRESHOLD).length;
 
   return (
     <div className="relative space-y-6">
@@ -89,7 +121,7 @@ const Medics = () => {
         </div>
       </motion.section>
 
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-5">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-blue-50/80 to-indigo-100/70 dark:from-slate-900/90 dark:to-blue-950/30 p-4 backdrop-blur-md">
           <p className="text-xs text-muted-foreground dark:text-slate-300">Всего в списке</p>
           <p className="text-2xl font-semibold text-blue-900 dark:text-blue-200">{medics.length}</p>
@@ -109,6 +141,11 @@ const Medics = () => {
           <p className="text-xs text-muted-foreground dark:text-slate-300">Заблокированы</p>
           <p className="text-2xl font-semibold text-rose-900 dark:text-rose-200">{blockedCount}</p>
           <ShieldAlert className="h-4 w-4 text-rose-700 dark:text-rose-300 mt-2" />
+        </div>
+        <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-amber-50/80 to-yellow-100/70 dark:from-slate-900/90 dark:to-amber-950/30 p-4 backdrop-blur-md">
+          <p className="text-xs text-muted-foreground dark:text-slate-300">Низкий кошелёк</p>
+          <p className="text-2xl font-semibold text-amber-900 dark:text-amber-200">{lowWalletCount}</p>
+          <Wallet className="h-4 w-4 text-amber-700 dark:text-amber-300 mt-2" />
         </div>
       </div>
 
@@ -144,6 +181,7 @@ const Medics = () => {
               <TableHead>Онлайн</TableHead>
               <TableHead>Рейтинг</TableHead>
               <TableHead>Баланс</TableHead>
+              <TableHead>Кошелёк</TableHead>
               <TableHead>Заблокирован</TableHead>
             </TableRow>
           </TableHeader>
@@ -151,50 +189,111 @@ const Medics = () => {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 8 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredMedics.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   Нет данных
                 </TableCell>
               </TableRow>
             ) : (
-              filteredMedics.map((m) => (
-                <TableRow key={m.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
-                  <TableCell className="font-medium">{m.name}</TableCell>
-                  <TableCell className="font-mono text-sm">{m.phone}</TableCell>
-                  <TableCell><StatusBadge status={m.verificationStatus} /></TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center gap-2 text-xs font-medium rounded-full px-2 py-1 ${
-                      m.isOnline ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                    }`}>
-                      <span className={`inline-block h-2 w-2 rounded-full ${m.isOnline ? "bg-emerald-500" : "bg-slate-400"}`} />
-                      {m.isOnline ? "Online" : "Offline"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                      {m.rating ?? "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell>{m.balance != null ? `${Number(m.balance).toLocaleString("ru-RU")} UZS` : "—"}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={m.isBlocked || false}
-                      onCheckedChange={(v) => handleBlock(m.id, v)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
+              filteredMedics.map((m) => {
+                const wallet = Number(m.walletBalance ?? 0);
+                const isLow = wallet < LOW_WALLET_THRESHOLD;
+                return (
+                  <TableRow key={m.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
+                    <TableCell className="font-medium">{m.name}</TableCell>
+                    <TableCell className="font-mono text-sm">{m.phone}</TableCell>
+                    <TableCell><StatusBadge status={m.verificationStatus} /></TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center gap-2 text-xs font-medium rounded-full px-2 py-1 ${
+                        m.isOnline ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        <span className={`inline-block h-2 w-2 rounded-full ${m.isOnline ? "bg-emerald-500" : "bg-slate-400"}`} />
+                        {m.isOnline ? "Online" : "Offline"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                        {m.rating ?? "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>{m.balance != null ? `${Number(m.balance).toLocaleString("ru-RU")} UZS` : "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${isLow ? "text-rose-600" : "text-emerald-700"}`}>
+                          {wallet.toLocaleString("ru-RU")} UZS
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => { setTopupTarget(m); setTopupAmount(""); }}
+                        >
+                          <Wallet className="h-3 w-3 mr-1" />
+                          Пополнить
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={m.isBlocked || false}
+                        onCheckedChange={(v) => handleBlock(m.id, v)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Top-up wallet dialog */}
+      <Dialog open={topupTarget !== null} onOpenChange={(open) => { if (!open) setTopupTarget(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Пополнить кошелёк</DialogTitle>
+          </DialogHeader>
+          {topupTarget && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm space-y-1">
+                <p className="font-medium">{topupTarget.name ?? topupTarget.phone}</p>
+                <p className="text-muted-foreground">
+                  Текущий баланс:{" "}
+                  <span className={Number(topupTarget.walletBalance ?? 0) < LOW_WALLET_THRESHOLD ? "text-rose-600 font-semibold" : "text-emerald-700 font-semibold"}>
+                    {Number(topupTarget.walletBalance ?? 0).toLocaleString("ru-RU")} UZS
+                  </span>
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="topup-amount">Сумма пополнения (UZS)</Label>
+                <Input
+                  id="topup-amount"
+                  type="number"
+                  min="1"
+                  placeholder="Например: 50000"
+                  value={topupAmount}
+                  onChange={(e) => setTopupAmount(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleTopup(); }}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTopupTarget(null)}>Отмена</Button>
+            <Button onClick={handleTopup} disabled={!topupAmount || Number(topupAmount) <= 0}>
+              <Wallet className="h-4 w-4 mr-2" />
+              Пополнить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
