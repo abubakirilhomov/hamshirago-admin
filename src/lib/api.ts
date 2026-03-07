@@ -23,7 +23,6 @@ export interface AdminMedic {
   isOnline: boolean;
   rating: number | null;
   balance: number | string;
-  walletBalance: number | string;
   isBlocked: boolean;
   experienceYears: number;
   reviewCount: number;
@@ -202,9 +201,6 @@ export const verifyMedic = (id: string, status: "APPROVED" | "REJECTED", reason?
 
 export const blockMedic = (id: string, isBlocked: boolean) =>
   request<void>("PATCH", `/medics/admin/${id}/block`, { isBlocked });
-
-export const topupMedicWallet = (id: string, amount: number) =>
-  request<void>("PATCH", `/medics/admin/${id}/wallet`, { amount });
 
 // ── Users (Clients) ───────────────────────────────────────────────────────────
 
