@@ -1,6 +1,6 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "./Dockerfile"
+builder = "NIXPACKS"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
+startCommand = "npx serve -s dist -l tcp://0.0.0.0:${PORT:-8080}"
