@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { ClipboardList, Eye, Filter, Layers3, Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const emptyForm = {
   title: "",
@@ -29,6 +30,7 @@ const emptyForm = {
 };
 
 const Services = () => {
+  const { t } = useTranslation();
   const [services, setServices] = useState<AdminService[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -41,7 +43,7 @@ const Services = () => {
       const data = await getServices();
       setServices(data);
     } catch {
-      toast.error("Ошибка загрузки услуг");
+      toast.error(t("services.toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -75,26 +77,26 @@ const Services = () => {
     try {
       if (editingId) {
         await updateService(editingId, form);
-        toast.success("Услуга обновлена");
+        toast.success(t("services.toastUpdated"));
       } else {
         await createService(form);
-        toast.success("Услуга создана");
+        toast.success(t("services.toastCreated"));
       }
       setDialogOpen(false);
       load();
     } catch {
-      toast.error("Ошибка сохранения");
+      toast.error(t("services.toastError"));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Удалить услугу?")) return;
+    if (!confirm(t("services.confirmDelete"))) return;
     try {
       await deleteService(id);
-      toast.success("Услуга удалена");
+      toast.success(t("services.toastDeleted"));
       load();
     } catch {
-      toast.error("Ошибка удаления");
+      toast.error(t("services.toastDeleteError"));
     }
   };
 
@@ -103,7 +105,7 @@ const Services = () => {
       await updateService(id, { isActive });
       setServices((prev) => prev.map((s) => (s.id === id ? { ...s, isActive } : s)));
     } catch {
-      toast.error("Ошибка");
+      toast.error(t("services.toastToggleError"));
     }
   };
 
@@ -137,35 +139,35 @@ const Services = () => {
         <div className="relative z-10 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Service Catalog</p>
-            <h1 className="text-3xl font-semibold tracking-tight">Каталог услуг</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{t("services.catalog")}</h1>
             <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-              Управление ассортиментом, ценами и видимостью услуг на клиентских платформах.
+              {t("services.subtitle")}
             </p>
           </div>
           <Button onClick={openCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white border-0">
-            <Plus className="h-4 w-4 mr-1" /> Добавить услугу
+            <Plus className="h-4 w-4 mr-1" /> {t("services.add")}
           </Button>
         </div>
       </motion.section>
 
       <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-blue-50/80 to-indigo-100/70 dark:from-slate-900/90 dark:to-blue-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Всего услуг</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("services.totalServices")}</p>
           <p className="text-2xl font-semibold text-blue-900 dark:text-blue-200">{services.length}</p>
           <ClipboardList className="h-4 w-4 text-blue-700 dark:text-blue-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-emerald-50/80 to-teal-100/70 dark:from-slate-900/90 dark:to-emerald-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Активные</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("services.activeServices")}</p>
           <p className="text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{activeCount}</p>
           <Eye className="h-4 w-4 text-emerald-700 dark:text-emerald-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-violet-50/80 to-fuchsia-100/70 dark:from-slate-900/90 dark:to-violet-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Категории</p>
-          <p className="text-2xl font-semibold text-violet-900 dark:text-violet-200">{new Set(services.map((s) => s.category || "Без категории")).size}</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("services.categories")}</p>
+          <p className="text-2xl font-semibold text-violet-900 dark:text-violet-200">{new Set(services.map((s) => s.category || t("services.noCategory"))).size}</p>
           <Layers3 className="h-4 w-4 text-violet-700 dark:text-violet-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-cyan-50/80 to-sky-100/70 dark:from-slate-900/90 dark:to-cyan-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Суммарная цена</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("services.totalPrice")}</p>
           <p className="text-2xl font-semibold text-cyan-900 dark:text-cyan-200">{totalPrice.toLocaleString("ru-RU")} UZS</p>
           <Filter className="h-4 w-4 text-cyan-700 dark:text-cyan-300 mt-2" />
         </div>
@@ -176,10 +178,10 @@ const Services = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по названию, категории, описанию"
+            placeholder={t("services.searchPlaceholder")}
             className="sm:max-w-sm bg-white/80 dark:bg-slate-900/80"
           />
-          <span className="status-badge status-created sm:ml-auto">Показано: {filteredServices.length}</span>
+          <span className="status-badge status-created sm:ml-auto">{t("services.shown")}: {filteredServices.length}</span>
         </div>
       </div>
 
@@ -187,13 +189,13 @@ const Services = () => {
         <Table>
           <TableHeader className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70">
             <TableRow>
-              <TableHead>Название</TableHead>
-              <TableHead>Категория</TableHead>
-              <TableHead>Цена</TableHead>
-              <TableHead>Длительность</TableHead>
-              <TableHead>Порядок</TableHead>
-              <TableHead>Активна</TableHead>
-              <TableHead>Действия</TableHead>
+              <TableHead>{t("services.colTitle")}</TableHead>
+              <TableHead>{t("services.colCategory")}</TableHead>
+              <TableHead>{t("services.colPrice")}</TableHead>
+              <TableHead>{t("services.colDuration")}</TableHead>
+              <TableHead>{t("services.colOrder")}</TableHead>
+              <TableHead>{t("services.colActive")}</TableHead>
+              <TableHead>{t("services.colActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -208,7 +210,7 @@ const Services = () => {
             ) : filteredServices.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  Нет услуг
+                  {t("services.noServices")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -217,7 +219,7 @@ const Services = () => {
                   <TableCell className="font-medium">{s.title}</TableCell>
                   <TableCell className="text-sm">{s.category}</TableCell>
                   <TableCell>{Number(s.price).toLocaleString("ru-RU")} UZS</TableCell>
-                  <TableCell>{s.durationMinutes} мин</TableCell>
+                  <TableCell>{s.durationMinutes} {t("services.minutes")}</TableCell>
                   <TableCell>{s.sortOrder}</TableCell>
                   <TableCell>
                     <Switch
@@ -249,39 +251,39 @@ const Services = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="border-white/40 dark:border-slate-700/60 bg-white/85 dark:bg-slate-900/90 backdrop-blur-md">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Редактировать услугу" : "Новая услуга"}</DialogTitle>
+            <DialogTitle>{editingId ? t("services.editDialog") : t("services.newDialog")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Название</Label>
+              <Label>{t("services.labelTitle")}</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
             </div>
             <div className="space-y-2">
-              <Label>Описание</Label>
+              <Label>{t("services.labelDesc")}</Label>
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Категория</Label>
+                <Label>{t("services.labelCategory")}</Label>
                 <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Цена (UZS)</Label>
+                <Label>{t("services.labelPrice")}</Label>
                 <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Длительность (мин)</Label>
+                <Label>{t("services.labelDuration")}</Label>
                 <Input type="number" value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: Number(e.target.value) })} />
               </div>
               <div className="space-y-2">
-                <Label>Порядок сортировки</Label>
+                <Label>{t("services.labelSortOrder")}</Label>
                 <Input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} />
               </div>
             </div>
             <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 text-white border-0">
-              {editingId ? "Сохранить" : "Создать"}
+              {editingId ? t("services.save") : t("services.create")}
             </Button>
           </form>
         </DialogContent>

@@ -11,8 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Users, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const Clients = () => {
+  const { t } = useTranslation();
   const [users, setUsers]       = useState<AdminUser[]>([]);
   const [total, setTotal]       = useState(0);
   const [page, setPage]         = useState(1);
@@ -33,30 +35,29 @@ const Clients = () => {
       setTotalPages(res.totalPages);
     } catch (e) {
       console.error(e);
-      toast.error("Ошибка загрузки клиентов");
+      toast.error(t("clients.toastLoadError"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(1, ""); }, [load]);
 
-  // Поиск с задержкой
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setSearch(searchInput);
       load(1, searchInput);
     }, 400);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [searchInput, load]);
 
   const handleBlock = async (id: string, isBlocked: boolean) => {
     try {
       await blockClient(id, isBlocked);
       setUsers((prev) => prev.map((u) => u.id === id ? { ...u, isBlocked } : u));
-      toast.success(isBlocked ? "Клиент заблокирован" : "Клиент разблокирован");
+      toast.success(isBlocked ? t("clients.toastBlocked") : t("clients.toastUnblocked"));
     } catch {
-      toast.error("Ошибка");
+      toast.error(t("clients.toastError"));
     }
   };
 
@@ -73,51 +74,48 @@ const Clients = () => {
         <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl" />
         <div className="relative z-10">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Client Management</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Все клиенты</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("clients.allClients")}</h1>
           <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-            Управление учётными записями клиентов платформы.
+            {t("clients.subtitle")}
           </p>
         </div>
       </motion.section>
 
-      {/* KPI */}
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-blue-50/80 to-indigo-100/70 dark:from-slate-900/90 dark:to-blue-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Всего клиентов</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("clients.total")}</p>
           <p className="text-2xl font-semibold text-blue-900 dark:text-blue-200">{total}</p>
           <Users className="h-4 w-4 text-blue-700 dark:text-blue-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-rose-50/80 to-orange-100/70 dark:from-slate-900/90 dark:to-rose-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Заблокированы (на странице)</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("clients.blockedPage")}</p>
           <p className="text-2xl font-semibold text-rose-900 dark:text-rose-200">{blockedCount}</p>
           <ShieldAlert className="h-4 w-4 text-rose-700 dark:text-rose-300 mt-2" />
         </div>
       </div>
 
-      {/* Поиск */}
       <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-4">
         <div className="flex items-center gap-3">
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Поиск по имени или телефону"
+            placeholder={t("clients.searchPlaceholder")}
             className="max-w-sm bg-white/80 dark:bg-slate-900/80"
           />
           <span className="status-badge status-created ml-auto">
-            Всего: {total}
+            {t("clients.total")}: {total}
           </span>
         </div>
       </div>
 
-      {/* Таблица */}
       <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md overflow-hidden">
         <Table>
           <TableHeader className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur">
             <TableRow>
-              <TableHead>Имя</TableHead>
-              <TableHead>Телефон</TableHead>
-              <TableHead>Дата регистрации</TableHead>
-              <TableHead>Заблокирован</TableHead>
+              <TableHead>{t("clients.colName")}</TableHead>
+              <TableHead>{t("clients.colPhone")}</TableHead>
+              <TableHead>{t("clients.colDate")}</TableHead>
+              <TableHead>{t("clients.colBlocked")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +130,7 @@ const Clients = () => {
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
-                  Клиентов не найдено
+                  {t("clients.notFound")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -156,7 +154,6 @@ const Clients = () => {
         </Table>
       </div>
 
-      {/* Пагинация */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
           <Button

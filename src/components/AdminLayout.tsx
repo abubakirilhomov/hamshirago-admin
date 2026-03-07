@@ -4,7 +4,7 @@ import { hasAdminToken as hasAdminSecret } from "@/lib/api";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { Search, Stethoscope, Download, X } from "lucide-react";
+import { Search, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -32,6 +32,23 @@ function LanguageSwitcher() {
   );
 }
 
+function NavbarInstallButton() {
+  const { canInstall, install } = usePWAInstall();
+  const { t } = useTranslation();
+
+  if (!canInstall) return null;
+
+  return (
+    <button
+      onClick={install}
+      className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 px-3 py-1.5 text-xs font-semibold hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors"
+    >
+      <Download className="h-3.5 w-3.5" />
+      {t("common.downloadApp")}
+    </button>
+  );
+}
+
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
 
@@ -47,19 +64,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0 relative">
           <header className="h-14 flex items-center border-b border-white/40 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-4 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
-            <div className="flex items-center gap-2">
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-full flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-              >
-                <Stethoscope className="h-3.5 w-3.5 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-foreground">HamshiraGo</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">— Admin</span>
-            </div>
             <div className="ml-auto flex items-center gap-2">
               <LanguageSwitcher />
               <ThemeToggle />
+              <NavbarInstallButton />
               <Button
                 variant="outline"
                 size="sm"
@@ -102,12 +110,7 @@ function PWAInstallBanner() {
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 bg-teal-50 dark:bg-teal-950/40 border-b border-teal-100 dark:border-teal-900">
-      <div
-        className="flex h-7 w-7 items-center justify-center rounded-full flex-shrink-0"
-        style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-      >
-        <Stethoscope className="h-3.5 w-3.5 text-white" />
-      </div>
+      <img src="/logo.png" alt="HamshiraGo" className="h-12 w-12 rounded-xl object-cover flex-shrink-0" />
       <p className="text-sm text-teal-800 dark:text-teal-200 flex-1">
         {t("common.installApp")}
       </p>

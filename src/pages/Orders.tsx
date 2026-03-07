@@ -29,24 +29,27 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { io, Socket } from "socket.io-client";
 import { useSearchParams } from "react-router-dom";
-
-const STATUSES = [
-  { value: "ALL", label: "Все" },
-  { value: "CREATED", label: "Создан" },
-  { value: "ASSIGNED", label: "Назначен" },
-  { value: "ACCEPTED", label: "Принят" },
-  { value: "ON_THE_WAY", label: "В пути" },
-  { value: "ARRIVED", label: "Прибыл" },
-  { value: "SERVICE_STARTED", label: "Выполняется" },
-  { value: "DONE", label: "Завершён" },
-  { value: "CANCELED", label: "Отменён" },
-];
+import { useTranslation } from "react-i18next";
 
 const CANCELABLE = ["CREATED", "ASSIGNED", "ACCEPTED", "ON_THE_WAY", "ARRIVED", "SERVICE_STARTED"];
 type SortKey = "created_at" | "priceAmount" | "platformFee" | "status";
 type SortDirection = "asc" | "desc";
 
 const Orders = () => {
+  const { t } = useTranslation();
+
+  const STATUSES = [
+    { value: "ALL", label: t("medics.filterAll") },
+    { value: "CREATED", label: t("orders.status_values.CREATED") },
+    { value: "ASSIGNED", label: t("orders.status_values.ASSIGNED") },
+    { value: "ACCEPTED", label: t("orders.status_values.ACCEPTED") },
+    { value: "ON_THE_WAY", label: t("orders.status_values.ON_THE_WAY") },
+    { value: "ARRIVED", label: t("orders.status_values.ARRIVED") },
+    { value: "SERVICE_STARTED", label: t("orders.status_values.SERVICE_STARTED") },
+    { value: "DONE", label: t("orders.status_values.DONE") },
+    { value: "CANCELED", label: t("orders.status_values.CANCELED") },
+  ];
+
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -86,13 +89,13 @@ const Orders = () => {
         setTotal(data.total);
       }
     } catch (e) {
-      toast.error("Ошибка загрузки заказов");
+      toast.error(t("orders.toastLoadError"));
     } finally {
       if (withLoader) {
         setLoading(false);
       }
     }
-  }, [page, status, searchText]);
+  }, [page, status, searchText, t]);
 
   useEffect(() => {
     const initialSearch = searchParams.get("search") ?? "";
@@ -217,13 +220,13 @@ const Orders = () => {
   };
 
   const handleCancel = async (id: string) => {
-    if (!confirm("Отменить заказ?")) return;
+    if (!confirm(t("orders.confirmCancel"))) return;
     try {
       await cancelOrder(id);
-      toast.success("Заказ отменён");
+      toast.success(t("orders.toastCanceled"));
       load(false);
     } catch (e) {
-      toast.error("Ошибка отмены");
+      toast.error(t("orders.toastCancelError"));
     }
   };
 
@@ -242,38 +245,38 @@ const Orders = () => {
         <div className="relative z-10 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Order Control</p>
-            <h1 className="text-3xl font-semibold tracking-tight">Заказы</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{t("orders.title")}</h1>
             <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-              Мониторинг потока заказов в реальном времени с фильтрацией, сортировкой и быстрыми действиями.
+              {t("orders.subtitle")}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`status-badge ${socketConnected ? "status-done" : "status-created"}`}>
               {socketConnected ? "Live" : "Polling"}
             </span>
-            <span className="status-badge status-created">Всего: {total}</span>
+            <span className="status-badge status-created">{t("orders.total")}: {total}</span>
           </div>
         </div>
       </motion.section>
 
       <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-cyan-50/80 to-blue-100/70 dark:from-slate-900/90 dark:to-cyan-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Активные</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("orders.active")}</p>
           <p className="text-2xl font-semibold text-cyan-900 dark:text-cyan-200">{activeCount}</p>
           <Activity className="h-4 w-4 text-cyan-700 dark:text-cyan-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-emerald-50/80 to-teal-100/70 dark:from-slate-900/90 dark:to-emerald-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Завершены</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("orders.completed")}</p>
           <p className="text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{doneCount}</p>
           <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-rose-50/80 to-orange-100/70 dark:from-slate-900/90 dark:to-rose-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Отменены</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("orders.canceled")}</p>
           <p className="text-2xl font-semibold text-rose-900 dark:text-rose-200">{canceledCount}</p>
           <Clock3 className="h-4 w-4 text-rose-700 dark:text-rose-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-indigo-50/80 to-violet-100/70 dark:from-slate-900/90 dark:to-indigo-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Комиссия (выборка)</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("orders.commission")}</p>
           <p className="text-2xl font-semibold text-indigo-900 dark:text-indigo-200">{revenueSum.toLocaleString("ru-RU")} UZS</p>
           <Wallet className="h-4 w-4 text-indigo-700 dark:text-indigo-300 mt-2" />
         </div>
@@ -295,7 +298,7 @@ const Orders = () => {
               }
               setSearchParams(nextParams, { replace: true });
             }}
-            placeholder="Поиск: ID, услуга, адрес"
+            placeholder={t("orders.searchPlaceholder")}
             className="sm:max-w-sm bg-white/80 dark:bg-slate-900/80"
           />
           <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
@@ -308,7 +311,7 @@ const Orders = () => {
               ))}
             </SelectContent>
           </Select>
-          <span className="status-badge status-created sm:ml-auto">Сортировка: {sortKey}</span>
+          <span className="status-badge status-created sm:ml-auto">{t("orders.sorting")}: {sortKey}</span>
         </div>
       </div>
 
@@ -320,27 +323,27 @@ const Orders = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>
                   <button type="button" className="inline-flex items-center gap-1.5" onClick={() => toggleSort("created_at")}>
-                    Дата {renderSortIcon("created_at")}
+                    {t("orders.colDate")} {renderSortIcon("created_at")}
                   </button>
                 </TableHead>
-                <TableHead>Услуга</TableHead>
+                <TableHead>{t("orders.colService")}</TableHead>
                 <TableHead>
                   <button type="button" className="inline-flex items-center gap-1.5" onClick={() => toggleSort("priceAmount")}>
-                    Цена {renderSortIcon("priceAmount")}
+                    {t("orders.colPrice")} {renderSortIcon("priceAmount")}
                   </button>
                 </TableHead>
                 <TableHead>
                   <button type="button" className="inline-flex items-center gap-1.5" onClick={() => toggleSort("platformFee")}>
-                    Комиссия {renderSortIcon("platformFee")}
+                    {t("orders.colCommission")} {renderSortIcon("platformFee")}
                   </button>
                 </TableHead>
                 <TableHead>
                   <button type="button" className="inline-flex items-center gap-1.5" onClick={() => toggleSort("status")}>
-                    Статус {renderSortIcon("status")}
+                    {t("orders.status")} {renderSortIcon("status")}
                   </button>
                 </TableHead>
-                <TableHead>Адрес</TableHead>
-                <TableHead>Действие</TableHead>
+                <TableHead>{t("orders.colAddress")}</TableHead>
+                <TableHead>{t("orders.colAction")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -355,7 +358,7 @@ const Orders = () => {
               ) : orders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Нет заказов
+                    {t("orders.empty")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -383,7 +386,7 @@ const Orders = () => {
                           className="bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white border-0"
                           onClick={() => handleCancel(o.id)}
                         >
-                          <XCircle className="h-3.5 w-3.5 mr-1" /> Отменить
+                          <XCircle className="h-3.5 w-3.5 mr-1" /> {t("orders.cancelOrder")}
                         </Button>
                       )}
                     </TableCell>

@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/table";
 import { ShieldAlert, Star, Users, UserCheck, Wallet, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const LOW_WALLET_THRESHOLD = 10_000;
 
 const Medics = () => {
+  const { t } = useTranslation();
   const [medics, setMedics] = useState<AdminMedic[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -50,9 +52,9 @@ const Medics = () => {
       setMedics((prev) =>
         prev.map((m) => (m.id === id ? { ...m, isBlocked } : m))
       );
-      toast.success(isBlocked ? "Медик заблокирован" : "Медик разблокирован");
+      toast.success(isBlocked ? t("medics.toastBlocked") : t("medics.toastUnblocked"));
     } catch (e) {
-      toast.error("Ошибка");
+      toast.error(t("medics.toastError"));
     }
   };
 
@@ -60,7 +62,7 @@ const Medics = () => {
     if (!topupTarget) return;
     const amount = Number(topupAmount);
     if (!amount || amount <= 0) {
-      toast.error("Введите сумму больше 0");
+      toast.error(t("medics.topupInvalid"));
       return;
     }
     try {
@@ -72,11 +74,11 @@ const Medics = () => {
             : m
         )
       );
-      toast.success(`Кошелёк пополнен на ${amount.toLocaleString("ru-RU")} UZS`);
+      toast.success(`${t("medics.colWallet")} +${amount.toLocaleString("ru-RU")} UZS`);
       setTopupTarget(null);
       setTopupAmount("");
     } catch (e) {
-      toast.error("Ошибка при пополнении");
+      toast.error(t("medics.toastTopupError"));
     }
   };
 
@@ -114,21 +116,21 @@ const Medics = () => {
         <div className="pointer-events-none absolute -bottom-20 left-20 h-52 w-52 rounded-full bg-cyan-300/20 blur-3xl" />
         <div className="relative z-10">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Medic Operations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Все медики</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("medics.allMedics")}</h1>
           <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-            Центр управления профилями медиков, статусами верификации и доступностью в реальном времени.
+            {t("medics.subtitle")}
           </p>
         </div>
       </motion.section>
 
       <div className="grid gap-3 md:grid-cols-5">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-blue-50/80 to-indigo-100/70 dark:from-slate-900/90 dark:to-blue-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Всего в списке</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.total")}</p>
           <p className="text-2xl font-semibold text-blue-900 dark:text-blue-200">{medics.length}</p>
           <Users className="h-4 w-4 text-blue-700 dark:text-blue-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-emerald-50/80 to-teal-100/70 dark:from-slate-900/90 dark:to-emerald-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Онлайн</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.online")}</p>
           <p className="text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{onlineCount}</p>
           <Wifi className="h-4 w-4 text-emerald-700 dark:text-emerald-300 mt-2" />
         </div>
@@ -138,12 +140,12 @@ const Medics = () => {
           <UserCheck className="h-4 w-4 text-cyan-700 dark:text-cyan-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-rose-50/80 to-orange-100/70 dark:from-slate-900/90 dark:to-rose-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Заблокированы</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.blocked")}</p>
           <p className="text-2xl font-semibold text-rose-900 dark:text-rose-200">{blockedCount}</p>
           <ShieldAlert className="h-4 w-4 text-rose-700 dark:text-rose-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-amber-50/80 to-yellow-100/70 dark:from-slate-900/90 dark:to-amber-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">Низкий кошелёк</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.lowWallet")}</p>
           <p className="text-2xl font-semibold text-amber-900 dark:text-amber-200">{lowWalletCount}</p>
           <Wallet className="h-4 w-4 text-amber-700 dark:text-amber-300 mt-2" />
         </div>
@@ -154,7 +156,7 @@ const Medics = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по имени или телефону"
+            placeholder={t("medics.searchPlaceholder")}
             className="sm:max-w-sm bg-white/80 dark:bg-slate-900/80"
           />
           <Select value={onlineFilter} onValueChange={(v: "ALL" | "ONLINE" | "OFFLINE") => setOnlineFilter(v)}>
@@ -162,12 +164,12 @@ const Medics = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Все</SelectItem>
-              <SelectItem value="ONLINE">Только онлайн</SelectItem>
-              <SelectItem value="OFFLINE">Только оффлайн</SelectItem>
+              <SelectItem value="ALL">{t("medics.filterAll")}</SelectItem>
+              <SelectItem value="ONLINE">{t("medics.filterOnline")}</SelectItem>
+              <SelectItem value="OFFLINE">{t("medics.filterOffline")}</SelectItem>
             </SelectContent>
           </Select>
-          <span className="status-badge status-created sm:ml-auto">Показано: {filteredMedics.length}</span>
+          <span className="status-badge status-created sm:ml-auto">{t("medics.shown")}: {filteredMedics.length}</span>
         </div>
       </div>
 
@@ -175,14 +177,14 @@ const Medics = () => {
         <Table>
           <TableHeader className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70">
             <TableRow>
-              <TableHead>Имя</TableHead>
-              <TableHead>Телефон</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Онлайн</TableHead>
-              <TableHead>Рейтинг</TableHead>
-              <TableHead>Баланс</TableHead>
-              <TableHead>Кошелёк</TableHead>
-              <TableHead>Заблокирован</TableHead>
+              <TableHead>{t("medics.colName")}</TableHead>
+              <TableHead>{t("medics.colPhone")}</TableHead>
+              <TableHead>{t("medics.colStatus")}</TableHead>
+              <TableHead>{t("medics.colOnline")}</TableHead>
+              <TableHead>{t("medics.colRating")}</TableHead>
+              <TableHead>{t("medics.colBalance")}</TableHead>
+              <TableHead>{t("medics.colWallet")}</TableHead>
+              <TableHead>{t("medics.colBlocked")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -197,7 +199,7 @@ const Medics = () => {
             ) : filteredMedics.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  Нет данных
+                  {t("medics.noData")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -236,7 +238,7 @@ const Medics = () => {
                           onClick={() => { setTopupTarget(m); setTopupAmount(""); }}
                         >
                           <Wallet className="h-3 w-3 mr-1" />
-                          Пополнить
+                          {t("medics.topup")}
                         </Button>
                       </div>
                     </TableCell>
@@ -258,26 +260,26 @@ const Medics = () => {
       <Dialog open={topupTarget !== null} onOpenChange={(open) => { if (!open) setTopupTarget(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Пополнить кошелёк</DialogTitle>
+            <DialogTitle>{t("medics.topupTitle")}</DialogTitle>
           </DialogHeader>
           {topupTarget && (
             <div className="space-y-4 py-2">
               <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm space-y-1">
                 <p className="font-medium">{topupTarget.name ?? topupTarget.phone}</p>
                 <p className="text-muted-foreground">
-                  Текущий баланс:{" "}
+                  {t("medics.currentBalance")}:{" "}
                   <span className={Number(topupTarget.walletBalance ?? 0) < LOW_WALLET_THRESHOLD ? "text-rose-600 font-semibold" : "text-emerald-700 font-semibold"}>
                     {Number(topupTarget.walletBalance ?? 0).toLocaleString("ru-RU")} UZS
                   </span>
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="topup-amount">Сумма пополнения (UZS)</Label>
+                <Label htmlFor="topup-amount">{t("medics.topupAmount")}</Label>
                 <Input
                   id="topup-amount"
                   type="number"
                   min="1"
-                  placeholder="Например: 50000"
+                  placeholder={t("medics.topupPlaceholder")}
                   value={topupAmount}
                   onChange={(e) => setTopupAmount(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleTopup(); }}
@@ -286,10 +288,10 @@ const Medics = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTopupTarget(null)}>Отмена</Button>
+            <Button variant="outline" onClick={() => setTopupTarget(null)}>{t("common.cancel")}</Button>
             <Button onClick={handleTopup} disabled={!topupAmount || Number(topupAmount) <= 0}>
               <Wallet className="h-4 w-4 mr-2" />
-              Пополнить
+              {t("medics.topup")}
             </Button>
           </DialogFooter>
         </DialogContent>
