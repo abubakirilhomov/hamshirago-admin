@@ -7,6 +7,7 @@
     "orders": "Buyurtmalar",
     "services": "Xizmatlar",
     "reports": "Hisobotlar",
+    "settings": "Sozlamalar",
     "logout": "Chiqish"
   },
   "login": {
@@ -41,7 +42,9 @@
     "inProgress": "Bugun jarayonda",
     "financialFocus": "Moliyaviy ko'rsatkich",
     "finRevenue": "Bajarilgan buyurtmalar bo'yicha platforma daromadi",
-    "efficiencyNote": "Samaradorlik ko'rsatkichi muvaffaqiyatli yakunlangan buyurtmalar ulushiga asoslanadi."
+    "efficiencyNote": "Samaradorlik ko'rsatkichi muvaffaqiyatli yakunlangan buyurtmalar ulushiga asoslanadi.",
+    "paidModeOn": "Pullik rejim yoqilgan",
+    "paidModeOff": "Bepul rejim"
   },
   "verification": {
     "title": "Hamshiralarni tekshirish",
@@ -198,7 +201,8 @@
     "noCategory": "Kategoriyasiz",
     "searchPlaceholder": "Nomi, kategoriya, tavsif bo'yicha qidirish",
     "shown": "Ko'rsatildi",
-    "colTitle": "Nomi",
+    "colTitle": "Nomi (RU)",
+    "colTitleUz": "Nomi (UZ)",
     "colCategory": "Kategoriya",
     "colPrice": "Narx",
     "colDuration": "Davomiyligi",
@@ -209,9 +213,12 @@
     "noServices": "Xizmatlar yo'q",
     "editDialog": "Xizmatni tahrirlash",
     "newDialog": "Yangi xizmat",
-    "labelTitle": "Nomi",
-    "labelDesc": "Tavsif",
-    "labelCategory": "Kategoriya",
+    "labelTitle": "Nomi (RU)",
+    "labelDesc": "Tavsif (RU)",
+    "labelCategory": "Kategoriya (RU)",
+    "labelTitleUz": "Nomi (UZ)",
+    "labelDescUz": "Tavsif (UZ)",
+    "labelCategoryUz": "Kategoriya (UZ)",
     "labelPrice": "Narx (UZS)",
     "labelDuration": "Davomiyligi (daq)",
     "labelSortOrder": "Saralash tartibi",
@@ -250,6 +257,24 @@
     "revenueTooltip": "Daromad",
     "retry": "Qayta urinish",
     "errorLoad": "Hisobotlarni yuklashda xatolik"
+  },
+  "settings": {
+    "title": "Sozlamalar",
+    "subtitle": "Platforma ish rejimini boshqarish.",
+    "paidMode": "Pullik rejim",
+    "paidModeDesc": "Yoqilganda hamshiralar buyurtmani qabul qilishda 10% komissiya to'laydi. Mablag' yetarli bo'lmasa bloklanadi.",
+    "paidModeNote": "Yoqilganda nima o'zgaradi:",
+    "notePoint1": "Buyurtma qabul qilishda xizmat narxining 10% hisobdan yechiladi",
+    "notePoint2": "Balans < komissiyada hamshira bloklanadi (402 INSUFFICIENT_WALLET)",
+    "notePoint3": "Hamshira to'liq summani oladi, komissiya allaqachon yechilgan",
+    "currentState": "Joriy rejim",
+    "modeActive": "Pullik rejim yoqilgan",
+    "modeFree": "Bepul rejim",
+    "modeHint": "O'zgarishlar darhol qo'llaniladi",
+    "toastEnabled": "Pullik rejim yoqildi",
+    "toastDisabled": "Pullik rejim o'chirildi",
+    "toastError": "Saqlashda xatolik",
+    "toastLoadError": "Sozlamalarni yuklashda xatolik"
   },
   "language": { "title": "Язык / Til" },
   "common": {

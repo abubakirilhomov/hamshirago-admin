@@ -24,6 +24,9 @@ const emptyForm = {
   title: "",
   description: "",
   category: "",
+  titleUz: "",
+  descriptionUz: "",
+  categoryUz: "",
   price: 0,
   durationMinutes: 15,
   sortOrder: 0,
@@ -65,6 +68,9 @@ const Services = () => {
       title: s.title,
       description: s.description || "",
       category: s.category || "",
+      titleUz: s.titleUz || "",
+      descriptionUz: s.descriptionUz || "",
+      categoryUz: s.categoryUz || "",
       price: s.price,
       durationMinutes: s.durationMinutes,
       sortOrder: s.sortOrder || 0,
@@ -190,10 +196,10 @@ const Services = () => {
           <TableHeader className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70">
             <TableRow>
               <TableHead>{t("services.colTitle")}</TableHead>
+              <TableHead>{t("services.colTitleUz")}</TableHead>
               <TableHead>{t("services.colCategory")}</TableHead>
               <TableHead>{t("services.colPrice")}</TableHead>
               <TableHead>{t("services.colDuration")}</TableHead>
-              <TableHead>{t("services.colOrder")}</TableHead>
               <TableHead>{t("services.colActive")}</TableHead>
               <TableHead>{t("services.colActions")}</TableHead>
             </TableRow>
@@ -217,10 +223,10 @@ const Services = () => {
               filteredServices.map((s) => (
                 <TableRow key={s.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
                   <TableCell className="font-medium">{s.title}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{s.titleUz || "—"}</TableCell>
                   <TableCell className="text-sm">{s.category}</TableCell>
                   <TableCell>{Number(s.price).toLocaleString("ru-RU")} UZS</TableCell>
                   <TableCell>{s.durationMinutes} {t("services.minutes")}</TableCell>
-                  <TableCell>{s.sortOrder}</TableCell>
                   <TableCell>
                     <Switch
                       checked={s.isActive}
@@ -254,23 +260,41 @@ const Services = () => {
             <DialogTitle>{editingId ? t("services.editDialog") : t("services.newDialog")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("services.labelTitle")}</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("services.labelDesc")}</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+            {/* RU */}
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">🇷🇺 Русский</p>
+              <div className="space-y-2">
+                <Label>{t("services.labelTitle")}</Label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("services.labelDesc")}</Label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
               <div className="space-y-2">
                 <Label>{t("services.labelCategory")}</Label>
                 <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
               </div>
+            </div>
+            {/* UZ */}
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">🇺🇿 O'zbekcha</p>
               <div className="space-y-2">
-                <Label>{t("services.labelPrice")}</Label>
-                <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+                <Label>{t("services.labelTitleUz")}</Label>
+                <Input value={form.titleUz} onChange={(e) => setForm({ ...form, titleUz: e.target.value })} />
               </div>
+              <div className="space-y-2">
+                <Label>{t("services.labelDescUz")}</Label>
+                <Textarea value={form.descriptionUz} onChange={(e) => setForm({ ...form, descriptionUz: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("services.labelCategoryUz")}</Label>
+                <Input value={form.categoryUz} onChange={(e) => setForm({ ...form, categoryUz: e.target.value })} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("services.labelPrice")}</Label>
+              <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

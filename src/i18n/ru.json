@@ -7,6 +7,7 @@
     "orders": "Заказы",
     "services": "Услуги",
     "reports": "Отчёты",
+    "settings": "Настройки",
     "logout": "Выйти"
   },
   "login": {
@@ -41,7 +42,9 @@
     "inProgress": "Сегодня в обработке",
     "financialFocus": "Финансовый фокус",
     "finRevenue": "Доход платформы за выполненные заказы",
-    "efficiencyNote": "Индикатор эффективности построен на доле успешно завершённых заказов."
+    "efficiencyNote": "Индикатор эффективности построен на доле успешно завершённых заказов.",
+    "paidModeOn": "Платный режим включён",
+    "paidModeOff": "Бесплатный режим"
   },
   "verification": {
     "title": "Верификация медиков",
@@ -198,7 +201,8 @@
     "noCategory": "Без категории",
     "searchPlaceholder": "Поиск по названию, категории, описанию",
     "shown": "Показано",
-    "colTitle": "Название",
+    "colTitle": "Название (RU)",
+    "colTitleUz": "Название (UZ)",
     "colCategory": "Категория",
     "colPrice": "Цена",
     "colDuration": "Длительность",
@@ -209,9 +213,12 @@
     "noServices": "Нет услуг",
     "editDialog": "Редактировать услугу",
     "newDialog": "Новая услуга",
-    "labelTitle": "Название",
-    "labelDesc": "Описание",
-    "labelCategory": "Категория",
+    "labelTitle": "Название (RU)",
+    "labelDesc": "Описание (RU)",
+    "labelCategory": "Категория (RU)",
+    "labelTitleUz": "Nomi (UZ)",
+    "labelDescUz": "Tavsif (UZ)",
+    "labelCategoryUz": "Kategoriya (UZ)",
     "labelPrice": "Цена (UZS)",
     "labelDuration": "Длительность (мин)",
     "labelSortOrder": "Порядок сортировки",
@@ -250,6 +257,24 @@
     "revenueTooltip": "Доход",
     "retry": "Повторить",
     "errorLoad": "Ошибка загрузки отчётов"
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Управление режимом работы платформы.",
+    "paidMode": "Платный режим",
+    "paidModeDesc": "При включении медики платят 10% комиссии при принятии заказа. Блокируются при недостатке средств.",
+    "paidModeNote": "Что меняется при включении:",
+    "notePoint1": "При принятии заказа списывается 10% от стоимости услуги",
+    "notePoint2": "Медик блокируется если баланс < комиссии (402 INSUFFICIENT_WALLET)",
+    "notePoint3": "Медик получает полную стоимость за вычетом уже списанной комиссии",
+    "currentState": "Текущий режим",
+    "modeActive": "Платный режим включён",
+    "modeFree": "Бесплатный режим",
+    "modeHint": "Изменения применяются немедленно",
+    "toastEnabled": "Платный режим включён",
+    "toastDisabled": "Платный режим отключён",
+    "toastError": "Ошибка сохранения",
+    "toastLoadError": "Ошибка загрузки настроек"
   },
   "language": { "title": "Язык / Til" },
   "common": {

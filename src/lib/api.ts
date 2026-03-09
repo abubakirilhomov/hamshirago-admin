@@ -67,6 +67,9 @@ export interface AdminService {
   title: string;
   description: string;
   category: string;
+  titleUz: string | null;
+  descriptionUz: string | null;
+  categoryUz: string | null;
   price: number;
   durationMinutes: number;
   sortOrder: number;
@@ -77,6 +80,9 @@ export interface ServiceFormData {
   title: string;
   description: string;
   category: string;
+  titleUz: string;
+  descriptionUz: string;
+  categoryUz: string;
   price: number;
   durationMinutes: number;
   sortOrder: number;
@@ -202,6 +208,9 @@ export const verifyMedic = (id: string, status: "APPROVED" | "REJECTED", reason?
 export const blockMedic = (id: string, isBlocked: boolean) =>
   request<void>("PATCH", `/medics/admin/${id}/block`, { isBlocked });
 
+export const topupMedicWallet = (id: string, amount: number) =>
+  request<void>("POST", `/medics/admin/${id}/topup`, { amount });
+
 // ── Users (Clients) ───────────────────────────────────────────────────────────
 
 export const getUsers = (page = 1, limit = 20, search?: string, isBlocked?: boolean) => {
@@ -238,3 +247,15 @@ export const updateService = (id: string, data: Partial<ServiceFormData> & { isA
 
 export const deleteService = (id: string) =>
   request<void>("DELETE", `/services/${id}`);
+
+// ── App Settings ──────────────────────────────────────────────────────────────
+
+export interface AppSettings {
+  isPaidMode: boolean;
+}
+
+export const getSettings = () =>
+  request<AppSettings>("GET", "/settings", undefined, false);
+
+export const updateSettings = (data: Partial<AppSettings>) =>
+  request<AppSettings>("PATCH", "/settings", data);

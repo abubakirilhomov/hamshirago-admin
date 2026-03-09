@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { KpiCard } from "@/components/KpiCard";
-import { getOrders, getPendingMedics, type AdminOrder } from "@/lib/api";
+import { getOrders, getPendingMedics, getSettings, type AdminOrder } from "@/lib/api";
 import {
   ClipboardList,
   CheckCircle2,
@@ -9,7 +9,9 @@ import {
   DollarSign,
   TrendingUp,
   AlertCircle,
+  CreditCard,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -35,17 +37,20 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dailyOrders, setDailyOrders] = useState<{ day: string; orders: number }[]>([]);
+  const [isPaidMode, setIsPaidMode] = useState<boolean | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      // 4 лёгких запроса — только total (limit=1)
-      const [allOrders, doneOrders, canceledOrders, pending] = await Promise.all([
+      // 5 лёгких запросов параллельно
+      const [allOrders, doneOrders, canceledOrders, pending, settings] = await Promise.all([
         getOrders(1, 1),
         getOrders(1, 1, "DONE"),
         getOrders(1, 1, "CANCELED"),
         getPendingMedics(),
+        getSettings(),
       ]);
+      setIsPaidMode(settings.isPaidMode);
 
       // Доход: последние REVENUE_LIMIT DONE заказов (макс 5 страниц по 100)
       let revenue = 0;
@@ -222,6 +227,18 @@ const Dashboard = () => {
             <p className="text-sm text-muted-foreground dark:text-slate-300 max-w-2xl">
               {t("dashboard.subtitle")}
             </p>
+            {isPaidMode !== null && (
+              <Link to="/settings" className="inline-flex items-center gap-1.5 w-fit mt-1">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-opacity hover:opacity-80 ${
+                  isPaidMode
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                }`}>
+                  <CreditCard className="h-3 w-3" />
+                  {isPaidMode ? t("dashboard.paidModeOn") : t("dashboard.paidModeOff")}
+                </span>
+              </Link>
+            )}
           </div>
           <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/75 p-4 backdrop-blur-md">
             <p className="text-xs uppercase tracking-wider text-muted-foreground dark:text-slate-300">{t("dashboard.efficiency")}</p>

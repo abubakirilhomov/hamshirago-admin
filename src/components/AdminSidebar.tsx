@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Package,
   BarChart2,
+  Settings2,
   LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -39,6 +40,7 @@ export function AdminSidebar() {
     { key: "orders", url: "/orders", icon: ClipboardList },
     { key: "services", url: "/services", icon: Package },
     { key: "reports", url: "/reports", icon: BarChart2 },
+    { key: "settings", url: "/settings", icon: Settings2 },
   ];
 
   const handleLogout = () => {
