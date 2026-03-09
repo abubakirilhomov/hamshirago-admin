@@ -29,6 +29,7 @@ export interface AdminMedic {
   facePhotoUrl: string | null;
   licensePhotoUrl: string | null;
   created_at: string;
+  earnings?: number;
 }
 
 export interface AdminUser {
@@ -252,6 +253,7 @@ export const deleteService = (id: string) =>
 
 export interface AppSettings {
   isPaidMode: boolean;
+  commissionRate: number;
 }
 
 export const getSettings = () =>

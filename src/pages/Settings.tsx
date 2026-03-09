@@ -1,21 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSettings, updateSettings } from "@/lib/api";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Settings2, CreditCard, Info } from "lucide-react";
+import { Settings2, CreditCard, Info, Percent } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Settings = () => {
   const { t } = useTranslation();
   const [isPaidMode, setIsPaidMode] = useState(false);
+  const [commissionRate, setCommissionRate] = useState(10);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingRate, setSavingRate] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     getSettings()
-      .then((s) => setIsPaidMode(s.isPaidMode))
+      .then((s) => {
+        setIsPaidMode(s.isPaidMode);
+        setCommissionRate(s.commissionRate ?? 10);
+      })
       .catch(() => toast.error(t("settings.toastLoadError")))
       .finally(() => setLoading(false));
   }, [t]);
@@ -31,6 +38,25 @@ const Settings = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRateChange = (value: number[]) => {
+    const rate = value[0];
+    setCommissionRate(rate);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setSavingRate(true);
+      try {
+        const result = await updateSettings({ commissionRate: rate });
+        setCommissionRate(result.commissionRate);
+        toast.success(t("settings.toastRateSaved"));
+      } catch {
+        toast.error(t("settings.toastError"));
+      } finally {
+        setSavingRate(false);
+      }
+    }, 500);
   };
 
   return (
@@ -83,6 +109,47 @@ const Settings = () => {
                 </ul>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className={`flex items-start gap-4 transition-opacity duration-200 ${!isPaidMode ? "opacity-50 pointer-events-none" : ""}`}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex-shrink-0">
+            <Percent className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div>
+                <p className="font-semibold text-base">{t("settings.commissionRate")}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("settings.commissionRateDesc")}</p>
+              </div>
+              {loading ? (
+                <Skeleton className="h-6 w-16 rounded-lg" />
+              ) : (
+                <span className="inline-flex items-center rounded-lg bg-violet-100 dark:bg-violet-950/50 px-3 py-1 text-sm font-bold text-violet-700 dark:text-violet-300 min-w-[3.5rem] justify-center">
+                  {savingRate ? "..." : t("settings.commissionRateValue", { rate: commissionRate })}
+                </span>
+              )}
+            </div>
+
+            {loading ? (
+              <Skeleton className="h-5 w-full rounded-full" />
+            ) : (
+              <Slider
+                min={1}
+                max={50}
+                step={1}
+                value={[commissionRate]}
+                onValueChange={handleRateChange}
+                disabled={!isPaidMode || savingRate}
+                className="w-full"
+              />
+            )}
+
+            {!isPaidMode && (
+              <p className="mt-2 text-xs text-muted-foreground italic">
+                {t("settings.commissionRateHint")}
+              </p>
+            )}
           </div>
         </div>
       </div>

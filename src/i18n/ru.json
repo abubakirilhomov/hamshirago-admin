@@ -144,6 +144,7 @@
     "colRating": "Рейтинг",
     "colBalance": "Баланс",
     "colWallet": "Кошелёк",
+    "colEarnings": "Заработок",
     "colBlocked": "Заблокирован",
     "noData": "Нет данных",
     "topup": "Пополнить",
@@ -274,7 +275,12 @@
     "toastEnabled": "Платный режим включён",
     "toastDisabled": "Платный режим отключён",
     "toastError": "Ошибка сохранения",
-    "toastLoadError": "Ошибка загрузки настроек"
+    "toastLoadError": "Ошибка загрузки настроек",
+    "commissionRate": "Размер комиссии",
+    "commissionRateDesc": "Процент от стоимости заказа, списываемый при принятии",
+    "commissionRateValue": "{{rate}}% от стоимости заказа",
+    "commissionRateHint": "Доступно только в платном режиме",
+    "toastRateSaved": "Комиссия обновлена"
   },
   "language": { "title": "Язык / Til" },
   "common": {

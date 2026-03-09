@@ -184,6 +184,7 @@ const Medics = () => {
               <TableHead>{t("medics.colRating")}</TableHead>
               <TableHead>{t("medics.colBalance")}</TableHead>
               <TableHead>{t("medics.colWallet")}</TableHead>
+              <TableHead>{t("medics.colEarnings")}</TableHead>
               <TableHead>{t("medics.colBlocked")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -191,14 +192,14 @@ const Medics = () => {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 9 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredMedics.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   {t("medics.noData")}
                 </TableCell>
               </TableRow>
@@ -241,6 +242,9 @@ const Medics = () => {
                           {t("medics.topup")}
                         </Button>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {Number(m.earnings ?? 0).toLocaleString("ru-RU")} UZS
                     </TableCell>
                     <TableCell>
                       <Switch

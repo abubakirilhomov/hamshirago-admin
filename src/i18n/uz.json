@@ -144,6 +144,7 @@
     "colRating": "Reyting",
     "colBalance": "Balans",
     "colWallet": "Hamyon",
+    "colEarnings": "Daromad",
     "colBlocked": "Bloklangan",
     "noData": "Ma'lumot yo'q",
     "topup": "To'ldirish",
@@ -274,7 +275,12 @@
     "toastEnabled": "Pullik rejim yoqildi",
     "toastDisabled": "Pullik rejim o'chirildi",
     "toastError": "Saqlashda xatolik",
-    "toastLoadError": "Sozlamalarni yuklashda xatolik"
+    "toastLoadError": "Sozlamalarni yuklashda xatolik",
+    "commissionRate": "Komissiya miqdori",
+    "commissionRateDesc": "Buyurtmani qabul qilishda yechib olinadigan foiz",
+    "commissionRateValue": "Buyurtma narxining {{rate}}%i",
+    "commissionRateHint": "Faqat pullik rejimda mavjud",
+    "toastRateSaved": "Komissiya yangilandi"
   },
   "language": { "title": "Язык / Til" },
   "common": {
