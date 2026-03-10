@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { KpiCard } from "@/components/KpiCard";
 import { getOrders, getPendingMedics, getSettings, type AdminOrder } from "@/lib/api";
 import {
@@ -14,8 +14,34 @@ import {
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useTranslation } from "react-i18next";
+
+const OrdersAreaChart = lazy(() =>
+  import("recharts").then(({ Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis }) => ({
+    default: ({ data }: { data: { day: string; orders: number }[] }) => (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.04} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="day" tickLine={false} axisLine={false} />
+          <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="orders"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2.4}
+            fill="url(#ordersGradient)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    ),
+  }))
+);
 
 // Лимит для подсчёта дохода — последние N DONE заказов
 const REVENUE_LIMIT = 500;
@@ -292,26 +318,9 @@ const Dashboard = () => {
           <span className="status-badge status-created">auto refresh 2m</span>
         </div>
         <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dailyOrders}>
-              <defs>
-                <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.04} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="day" tickLine={false} axisLine={false} />
-              <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="orders"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2.4}
-                fill="url(#ordersGradient)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<div className="h-72 animate-pulse rounded-lg bg-muted" />}>
+            <OrdersAreaChart data={dailyOrders} />
+          </Suspense>
         </div>
       </motion.section>
 

@@ -1,11 +1,41 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { getOrders, type AdminOrder } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AlertCircle, Download, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+
+type RevenueChartProps = {
+  data: { day: string; revenue: number }[];
+  formatUZS: (n: number) => string;
+  tooltipLabel: string;
+};
+
+const RevenueBarChart = lazy(() =>
+  import("recharts").then(({ Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis }) => ({
+    default: ({ data, formatUZS, tooltipLabel }: RevenueChartProps) => (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(v: number) =>
+              v >= 1_000_000
+                ? `${(v / 1_000_000).toFixed(1)}M`
+                : v >= 1_000
+                ? `${(v / 1_000).toFixed(0)}k`
+                : String(v)
+            }
+          />
+          <Tooltip formatter={(v: number) => [formatUZS(v), tooltipLabel]} />
+          <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    ),
+  }))
+);
 
 const ORDER_LIMIT = 500;
 const PAGE_SIZE = 100;
@@ -246,24 +276,9 @@ const Reports = () => {
           <p className="text-sm text-muted-foreground py-10 text-center">{t("reports.noData")}</p>
         ) : (
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) =>
-                    v >= 1_000_000
-                      ? `${(v / 1_000_000).toFixed(1)}M`
-                      : v >= 1_000
-                      ? `${(v / 1_000).toFixed(0)}k`
-                      : String(v)
-                  }
-                />
-                <Tooltip formatter={(v: number) => [formatUZS(v), t("reports.revenueTooltip")]} />
-                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+              <RevenueBarChart data={chartData} formatUZS={formatUZS} tooltipLabel={t("reports.revenueTooltip")} />
+            </Suspense>
           </div>
         )}
       </motion.section>
