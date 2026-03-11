@@ -4,7 +4,7 @@ import { adminLogin } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle, Stethoscope } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -43,12 +43,12 @@ const Login = () => {
         className="w-full flex flex-col items-center pt-16 pb-12 px-4"
         style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
       >
-        <div
-          className="flex h-[72px] w-[72px] items-center justify-center rounded-full mb-3"
-          style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-        >
-          <Stethoscope className="h-9 w-9 text-white" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="HamshiraGo"
+          className="mb-3"
+          style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover" }}
+        />
         <h1 className="text-[26px] font-bold text-white">HamshiraGo</h1>
         <p className="text-[15px] mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
           {t("login.title")}
