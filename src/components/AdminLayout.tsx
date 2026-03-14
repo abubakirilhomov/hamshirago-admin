@@ -51,8 +51,17 @@ function NavbarInstallButton() {
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
+  const [authed, setAuthed] = useState(() => hasAdminSecret());
 
-  if (!hasAdminSecret()) {
+  useEffect(() => {
+    const check = () => {
+      if (!hasAdminSecret()) setAuthed(false);
+    };
+    const id = window.setInterval(check, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  if (!authed) {
     return <Navigate to="/login" replace />;
   }
 
