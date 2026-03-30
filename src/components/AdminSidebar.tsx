@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Package,
   BarChart2,
-  Settings2,
   LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -24,24 +23,21 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useTranslation } from "react-i18next";
+
+const navItems = [
+  { title: "Дашборд", url: "/", icon: LayoutDashboard },
+  { title: "Верификация", url: "/verification", icon: UserCheck },
+  { title: "Медики", url: "/medics", icon: Stethoscope },
+  { title: "Клиенты", url: "/clients", icon: Users },
+  { title: "Заказы", url: "/orders", icon: ClipboardList },
+  { title: "Услуги", url: "/services", icon: Package },
+  { title: "Отчёты", url: "/reports", icon: BarChart2 },
+];
 
 export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
-  const { t } = useTranslation();
-
-  const navItems = [
-    { key: "dashboard", url: "/", icon: LayoutDashboard },
-    { key: "verification", url: "/verification", icon: UserCheck },
-    { key: "medics", url: "/medics", icon: Stethoscope },
-    { key: "clients", url: "/clients", icon: Users },
-    { key: "orders", url: "/orders", icon: ClipboardList },
-    { key: "services", url: "/services", icon: Package },
-    { key: "reports", url: "/reports", icon: BarChart2 },
-    { key: "settings", url: "/settings", icon: Settings2 },
-  ];
 
   const handleLogout = () => {
     clearAdminSecret();
@@ -51,25 +47,34 @@ export function AdminSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border dark:border-white/10 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950/95 backdrop-blur-md">
       <SidebarContent>
-        <div className={`py-4 ${collapsed ? "flex justify-center" : "px-4"}`}>
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="HamshiraGo"
-              className="h-12 w-12 rounded-xl object-cover shadow-lg flex-shrink-0"
-            />
-            {!collapsed && (
+        <div className="px-4 py-5">
+          {!collapsed && (
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg flex-shrink-0 text-white"
+                style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
+              >
+                <Stethoscope size={20} />
+              </div>
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
-            )}
-          </div>
+            </div>
+          )}
+          {collapsed && (
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg mx-auto text-white"
+              style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
+            >
+              <Stethoscope size={20} />
+            </div>
+          )}
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>{t("nav.dashboard") ? "" : "Navigation"}</SidebarGroupLabel>
+          <SidebarGroupLabel>Навигация</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
-                <SidebarMenuItem key={item.key}>
+                <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -78,7 +83,7 @@ export function AdminSidebar() {
                       activeClassName="bg-gradient-to-r from-cyan-500/15 to-teal-500/15 text-teal-700 dark:text-cyan-300 font-medium rounded-md"
                     >
                       <item.icon className="h-4 w-4 mr-2" />
-                      {!collapsed && <span>{t(`nav.${item.key}`)}</span>}
+                      {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -93,7 +98,7 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="hover:bg-sidebar-accent text-sidebar-foreground rounded-md">
               <LogOut className="h-4 w-4 mr-2" />
-              {!collapsed && <span>{t("nav.logout")}</span>}
+              {!collapsed && <span>Выйти</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

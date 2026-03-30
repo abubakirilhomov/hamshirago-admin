@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAllMedics, blockMedic, topupMedicWallet, type AdminMedic } from "@/lib/api";
+import { getAllMedics, blockMedic, type AdminMedic } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Table,
@@ -17,20 +14,14 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { ShieldAlert, Star, Users, UserCheck, Wallet, Wifi } from "lucide-react";
+import { ShieldAlert, Star, Users, UserCheck, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-
-const LOW_WALLET_THRESHOLD = 10_000;
 
 const Medics = () => {
-  const { t } = useTranslation();
   const [medics, setMedics] = useState<AdminMedic[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [onlineFilter, setOnlineFilter] = useState<"ALL" | "ONLINE" | "OFFLINE">("ALL");
-  const [topupTarget, setTopupTarget] = useState<AdminMedic | null>(null);
-  const [topupAmount, setTopupAmount] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -52,33 +43,9 @@ const Medics = () => {
       setMedics((prev) =>
         prev.map((m) => (m.id === id ? { ...m, isBlocked } : m))
       );
-      toast.success(isBlocked ? t("medics.toastBlocked") : t("medics.toastUnblocked"));
+      toast.success(isBlocked ? "Медик заблокирован" : "Медик разблокирован");
     } catch (e) {
-      toast.error(t("medics.toastError"));
-    }
-  };
-
-  const handleTopup = async () => {
-    if (!topupTarget) return;
-    const amount = Number(topupAmount);
-    if (!amount || amount <= 0) {
-      toast.error(t("medics.topupInvalid"));
-      return;
-    }
-    try {
-      await topupMedicWallet(topupTarget.id, amount);
-      setMedics((prev) =>
-        prev.map((m) =>
-          m.id === topupTarget.id
-            ? { ...m, walletBalance: Number(m.walletBalance ?? 0) + amount }
-            : m
-        )
-      );
-      toast.success(`${t("medics.colWallet")} +${amount.toLocaleString("ru-RU")} UZS`);
-      setTopupTarget(null);
-      setTopupAmount("");
-    } catch (e) {
-      toast.error(t("medics.toastTopupError"));
+      toast.error("Ошибка");
     }
   };
 
@@ -100,7 +67,6 @@ const Medics = () => {
   const onlineCount = medics.filter((m) => m.isOnline).length;
   const blockedCount = medics.filter((m) => m.isBlocked).length;
   const approvedCount = medics.filter((m) => m.verificationStatus === "APPROVED").length;
-  const lowWalletCount = medics.filter((m) => Number(m.walletBalance ?? 0) < LOW_WALLET_THRESHOLD).length;
 
   return (
     <div className="relative space-y-6">
@@ -116,21 +82,21 @@ const Medics = () => {
         <div className="pointer-events-none absolute -bottom-20 left-20 h-52 w-52 rounded-full bg-cyan-300/20 blur-3xl" />
         <div className="relative z-10">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Medic Operations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{t("medics.allMedics")}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Все медики</h1>
           <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-            {t("medics.subtitle")}
+            Центр управления профилями медиков, статусами верификации и доступностью в реальном времени.
           </p>
         </div>
       </motion.section>
 
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-blue-50/80 to-indigo-100/70 dark:from-slate-900/90 dark:to-blue-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.total")}</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">Всего в списке</p>
           <p className="text-2xl font-semibold text-blue-900 dark:text-blue-200">{medics.length}</p>
           <Users className="h-4 w-4 text-blue-700 dark:text-blue-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-emerald-50/80 to-teal-100/70 dark:from-slate-900/90 dark:to-emerald-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.online")}</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">Онлайн</p>
           <p className="text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{onlineCount}</p>
           <Wifi className="h-4 w-4 text-emerald-700 dark:text-emerald-300 mt-2" />
         </div>
@@ -140,14 +106,9 @@ const Medics = () => {
           <UserCheck className="h-4 w-4 text-cyan-700 dark:text-cyan-300 mt-2" />
         </div>
         <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-rose-50/80 to-orange-100/70 dark:from-slate-900/90 dark:to-rose-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.blocked")}</p>
+          <p className="text-xs text-muted-foreground dark:text-slate-300">Заблокированы</p>
           <p className="text-2xl font-semibold text-rose-900 dark:text-rose-200">{blockedCount}</p>
           <ShieldAlert className="h-4 w-4 text-rose-700 dark:text-rose-300 mt-2" />
-        </div>
-        <div className="rounded-xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-amber-50/80 to-yellow-100/70 dark:from-slate-900/90 dark:to-amber-950/30 p-4 backdrop-blur-md">
-          <p className="text-xs text-muted-foreground dark:text-slate-300">{t("medics.lowWallet")}</p>
-          <p className="text-2xl font-semibold text-amber-900 dark:text-amber-200">{lowWalletCount}</p>
-          <Wallet className="h-4 w-4 text-amber-700 dark:text-amber-300 mt-2" />
         </div>
       </div>
 
@@ -156,7 +117,7 @@ const Medics = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("medics.searchPlaceholder")}
+            placeholder="Поиск по имени или телефону"
             className="sm:max-w-sm bg-white/80 dark:bg-slate-900/80"
           />
           <Select value={onlineFilter} onValueChange={(v: "ALL" | "ONLINE" | "OFFLINE") => setOnlineFilter(v)}>
@@ -164,12 +125,12 @@ const Medics = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">{t("medics.filterAll")}</SelectItem>
-              <SelectItem value="ONLINE">{t("medics.filterOnline")}</SelectItem>
-              <SelectItem value="OFFLINE">{t("medics.filterOffline")}</SelectItem>
+              <SelectItem value="ALL">Все</SelectItem>
+              <SelectItem value="ONLINE">Только онлайн</SelectItem>
+              <SelectItem value="OFFLINE">Только оффлайн</SelectItem>
             </SelectContent>
           </Select>
-          <span className="status-badge status-created sm:ml-auto">{t("medics.shown")}: {filteredMedics.length}</span>
+          <span className="status-badge status-created sm:ml-auto">Показано: {filteredMedics.length}</span>
         </div>
       </div>
 
@@ -177,129 +138,63 @@ const Medics = () => {
         <Table>
           <TableHeader className="sticky top-0 z-20 bg-white/85 dark:bg-slate-900/85 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70">
             <TableRow>
-              <TableHead>{t("medics.colName")}</TableHead>
-              <TableHead>{t("medics.colPhone")}</TableHead>
-              <TableHead>{t("medics.colStatus")}</TableHead>
-              <TableHead>{t("medics.colOnline")}</TableHead>
-              <TableHead>{t("medics.colRating")}</TableHead>
-              <TableHead>{t("medics.colBalance")}</TableHead>
-              <TableHead>{t("medics.colWallet")}</TableHead>
-              <TableHead>{t("medics.colEarnings")}</TableHead>
-              <TableHead>{t("medics.colBlocked")}</TableHead>
+              <TableHead>Имя</TableHead>
+              <TableHead>Телефон</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>Онлайн</TableHead>
+              <TableHead>Рейтинг</TableHead>
+              <TableHead>Баланс</TableHead>
+              <TableHead>Заблокирован</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 9 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredMedics.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  {t("medics.noData")}
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  Нет данных
                 </TableCell>
               </TableRow>
             ) : (
-              filteredMedics.map((m) => {
-                const wallet = Number(m.walletBalance ?? 0);
-                const isLow = wallet < LOW_WALLET_THRESHOLD;
-                return (
-                  <TableRow key={m.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
-                    <TableCell className="font-medium">{m.name}</TableCell>
-                    <TableCell className="font-mono text-sm">{m.phone}</TableCell>
-                    <TableCell><StatusBadge status={m.verificationStatus} /></TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center gap-2 text-xs font-medium rounded-full px-2 py-1 ${
-                        m.isOnline ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                      }`}>
-                        <span className={`inline-block h-2 w-2 rounded-full ${m.isOnline ? "bg-emerald-500" : "bg-slate-400"}`} />
-                        {m.isOnline ? "Online" : "Offline"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                        {m.rating ?? "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell>{m.balance != null ? `${Number(m.balance).toLocaleString("ru-RU")} UZS` : "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${isLow ? "text-rose-600" : "text-emerald-700"}`}>
-                          {wallet.toLocaleString("ru-RU")} UZS
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 px-2 text-xs"
-                          onClick={() => { setTopupTarget(m); setTopupAmount(""); }}
-                        >
-                          <Wallet className="h-3 w-3 mr-1" />
-                          {t("medics.topup")}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {Number(m.earnings ?? 0).toLocaleString("ru-RU")} UZS
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={m.isBlocked || false}
-                        onCheckedChange={(v) => handleBlock(m.id, v)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+              filteredMedics.map((m) => (
+                <TableRow key={m.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
+                  <TableCell className="font-medium">{m.name}</TableCell>
+                  <TableCell className="font-mono text-sm">{m.phone}</TableCell>
+                  <TableCell><StatusBadge status={m.verificationStatus} /></TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center gap-2 text-xs font-medium rounded-full px-2 py-1 ${
+                      m.isOnline ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                    }`}>
+                      <span className={`inline-block h-2 w-2 rounded-full ${m.isOnline ? "bg-emerald-500" : "bg-slate-400"}`} />
+                      {m.isOnline ? "Online" : "Offline"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                      {m.rating ?? "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell>{m.balance != null ? `${Number(m.balance).toLocaleString("ru-RU")} UZS` : "—"}</TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={m.isBlocked || false}
+                      onCheckedChange={(v) => handleBlock(m.id, v)}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
       </div>
-
-      {/* Top-up wallet dialog */}
-      <Dialog open={topupTarget !== null} onOpenChange={(open) => { if (!open) setTopupTarget(null); }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("medics.topupTitle")}</DialogTitle>
-          </DialogHeader>
-          {topupTarget && (
-            <div className="space-y-4 py-2">
-              <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm space-y-1">
-                <p className="font-medium">{topupTarget.name ?? topupTarget.phone}</p>
-                <p className="text-muted-foreground">
-                  {t("medics.currentBalance")}:{" "}
-                  <span className={Number(topupTarget.walletBalance ?? 0) < LOW_WALLET_THRESHOLD ? "text-rose-600 font-semibold" : "text-emerald-700 font-semibold"}>
-                    {Number(topupTarget.walletBalance ?? 0).toLocaleString("ru-RU")} UZS
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="topup-amount">{t("medics.topupAmount")}</Label>
-                <Input
-                  id="topup-amount"
-                  type="number"
-                  min="1"
-                  placeholder={t("medics.topupPlaceholder")}
-                  value={topupAmount}
-                  onChange={(e) => setTopupAmount(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleTopup(); }}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTopupTarget(null)}>{t("common.cancel")}</Button>
-            <Button onClick={handleTopup} disabled={!topupAmount || Number(topupAmount) <= 0}>
-              <Wallet className="h-4 w-4 mr-2" />
-              {t("medics.topup")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

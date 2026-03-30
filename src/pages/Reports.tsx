@@ -1,44 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getOrders, type AdminOrder } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, RefreshCw } from "lucide-react";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-
-type RevenueChartProps = {
-  data: { day: string; revenue: number }[];
-  formatUZS: (n: number) => string;
-  tooltipLabel: string;
-};
-
-const RevenueBarChart = lazy(() =>
-  import("recharts").then(({ Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis }) => ({
-    default: ({ data, formatUZS, tooltipLabel }: RevenueChartProps) => (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v: number) =>
-              v >= 1_000_000
-                ? `${(v / 1_000_000).toFixed(1)}M`
-                : v >= 1_000
-                ? `${(v / 1_000).toFixed(0)}k`
-                : String(v)
-            }
-          />
-          <Tooltip formatter={(v: number) => [formatUZS(v), tooltipLabel]} />
-          <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    ),
-  }))
-);
-
-const ORDER_LIMIT = 500;
-const PAGE_SIZE = 100;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -106,32 +72,31 @@ function exportCsv(orders: AdminOrder[], from: string, to: string) {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 const Reports = () => {
-  const { t } = useTranslation();
   const [allDoneOrders, setAllDoneOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const collected: AdminOrder[] = [];
-      let page = 1;
-      while (collected.length < ORDER_LIMIT) {
-        const res = await getOrders(page, PAGE_SIZE, "DONE");
-        collected.push(...res.data);
-        if (collected.length >= res.total || page >= res.totalPages) break;
-        page++;
+      const first = await getOrders(1, 1, "DONE");
+      if (first.total === 0) {
+        setAllDoneOrders([]);
+        return;
       }
-      setAllDoneOrders(collected.slice(0, ORDER_LIMIT));
+      const PAGE = 100;
+      const totalPages = Math.ceil(first.total / PAGE);
+      const pages = await Promise.all(
+        Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
+      );
+      setAllDoneOrders(pages.flatMap((p) => p.data));
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("reports.errorLoad"));
+      console.error("Reports load error:", e);
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     load();
@@ -183,7 +148,7 @@ const Reports = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
+        <h1 className="text-2xl font-bold">Финансовые отчёты</h1>
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-2xl border bg-card p-5 h-24">
@@ -203,30 +168,19 @@ const Reports = () => {
   // ── Main render ─────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {/* Error banner */}
-      {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 dark:border-red-800/40 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span className="flex-1">{error}</span>
-          <Button size="sm" variant="ghost" onClick={load} className="gap-1.5 text-red-700 dark:text-red-400 hover:text-red-800">
-            <RefreshCw className="h-3.5 w-3.5" /> {t("reports.retry")}
-          </Button>
-        </div>
-      )}
-
       {/* Header + filters */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
+        <h1 className="text-2xl font-bold">Финансовые отчёты</h1>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <label className="text-muted-foreground whitespace-nowrap">{t("reports.dateFrom")}</label>
+            <label className="text-muted-foreground whitespace-nowrap">С</label>
             <input
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
             />
-            <label className="text-muted-foreground whitespace-nowrap">{t("reports.dateTo")}</label>
+            <label className="text-muted-foreground whitespace-nowrap">По</label>
             <input
               type="date"
               value={to}
@@ -241,7 +195,7 @@ const Reports = () => {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            {t("reports.exportCsv", { count: filtered.length })}
+            Экспорт CSV ({filtered.length})
           </Button>
         </div>
       </div>
@@ -249,10 +203,10 @@ const Reports = () => {
       {/* KPI cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: t("reports.platformRevenue"), value: formatUZS(totalRevenue), sub: t("reports.revenueCommissions") },
-          { label: t("reports.completedOrders"), value: String(filtered.length), sub: t("reports.donePeriod") },
-          { label: t("reports.avgOrder"), value: formatUZS(avgOrder), sub: t("reports.grossPrice") },
-          { label: t("reports.discountsGiven"), value: formatUZS(totalDiscount), sub: t("reports.totalDiscount") },
+          { label: "Доход платформы", value: formatUZS(totalRevenue), sub: "Сумма комиссий" },
+          { label: "Выполнено заказов", value: String(filtered.length), sub: "DONE за период" },
+          { label: "Средний заказ", value: formatUZS(avgOrder), sub: "Брутто-цена" },
+          { label: "Скидки выданы", value: formatUZS(totalDiscount), sub: "Итого дисконт" },
         ].map((c) => (
           <div
             key={c.label}
@@ -271,14 +225,29 @@ const Reports = () => {
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-white/80 via-white/75 to-cyan-50/80 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-cyan-950/30 backdrop-blur-md p-5"
       >
-        <h2 className="mb-4 text-lg font-semibold">{t("reports.revenueByDay")}</h2>
+        <h2 className="mb-4 text-lg font-semibold">Доход платформы по дням</h2>
         {chartData.every((d) => d.revenue === 0) ? (
-          <p className="text-sm text-muted-foreground py-10 text-center">{t("reports.noData")}</p>
+          <p className="text-sm text-muted-foreground py-10 text-center">Нет данных за выбранный период</p>
         ) : (
           <div className="h-64">
-            <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
-              <RevenueBarChart data={chartData} formatUZS={formatUZS} tooltipLabel={t("reports.revenueTooltip")} />
-            </Suspense>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) =>
+                    v >= 1_000_000
+                      ? `${(v / 1_000_000).toFixed(1)}M`
+                      : v >= 1_000
+                      ? `${(v / 1_000).toFixed(0)}k`
+                      : String(v)
+                  }
+                />
+                <Tooltip formatter={(v: number) => [formatUZS(v), "Доход"]} />
+                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         )}
       </motion.section>
@@ -290,18 +259,18 @@ const Reports = () => {
         transition={{ delay: 0.08 }}
         className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-white/80 via-white/75 to-cyan-50/80 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-cyan-950/30 backdrop-blur-md p-5"
       >
-        <h2 className="mb-4 text-lg font-semibold">{t("reports.revenueByService")}</h2>
+        <h2 className="mb-4 text-lg font-semibold">Доход по услугам</h2>
         {topServices.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-10 text-center">{t("reports.noData")}</p>
+          <p className="text-sm text-muted-foreground py-10 text-center">Нет данных за выбранный период</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2.5 font-medium">{t("reports.colService")}</th>
-                  <th className="pb-2.5 font-medium text-right">{t("reports.colOrders")}</th>
-                  <th className="pb-2.5 font-medium text-right">{t("reports.colGross")}</th>
-                  <th className="pb-2.5 font-medium text-right">{t("reports.colRevenue")}</th>
+                  <th className="pb-2.5 font-medium">Услуга</th>
+                  <th className="pb-2.5 font-medium text-right">Заказов</th>
+                  <th className="pb-2.5 font-medium text-right">Выручка (брутто)</th>
+                  <th className="pb-2.5 font-medium text-right">Доход платформы</th>
                 </tr>
               </thead>
               <tbody>
@@ -318,7 +287,7 @@ const Reports = () => {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-border">
-                  <td className="pt-2.5 font-semibold">{t("reports.totalRow")}</td>
+                  <td className="pt-2.5 font-semibold">Итого</td>
                   <td className="pt-2.5 text-right font-mono font-semibold">{filtered.length}</td>
                   <td className="pt-2.5 text-right font-mono font-semibold">{formatUZS(totalGross)}</td>
                   <td className="pt-2.5 text-right font-mono font-semibold text-teal-700 dark:text-teal-300">

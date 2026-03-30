@@ -1,4 +1,4 @@
-export const API_BASE = import.meta.env.VITE_API_URL as string ?? "https://hamshirago-production-0a65.up.railway.app";
+export const API_BASE = "https://hamshirago-production-0a65.up.railway.app";
 export const WS_URL = API_BASE;
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -29,7 +29,6 @@ export interface AdminMedic {
   facePhotoUrl: string | null;
   licensePhotoUrl: string | null;
   created_at: string;
-  earnings?: number;
 }
 
 export interface AdminUser {
@@ -68,9 +67,6 @@ export interface AdminService {
   title: string;
   description: string;
   category: string;
-  titleUz: string | null;
-  descriptionUz: string | null;
-  categoryUz: string | null;
   price: number;
   durationMinutes: number;
   sortOrder: number;
@@ -81,9 +77,6 @@ export interface ServiceFormData {
   title: string;
   description: string;
   category: string;
-  titleUz: string;
-  descriptionUz: string;
-  categoryUz: string;
   price: number;
   durationMinutes: number;
   sortOrder: number;
@@ -124,7 +117,6 @@ export async function adminLogin(username: string, password: string): Promise<vo
   });
 
   if (res.status === 401) throw new Error("Неверный логин или пароль");
-  if (res.status === 429) throw new Error("TOO_MANY_REQUESTS");
   if (!res.ok) throw new Error("Ошибка сервера. Попробуйте позже.");
 
   const data = await res.json() as { access_token: string };
@@ -209,9 +201,6 @@ export const verifyMedic = (id: string, status: "APPROVED" | "REJECTED", reason?
 export const blockMedic = (id: string, isBlocked: boolean) =>
   request<void>("PATCH", `/medics/admin/${id}/block`, { isBlocked });
 
-export const topupMedicWallet = (id: string, amount: number) =>
-  request<void>("POST", `/medics/admin/${id}/topup`, { amount });
-
 // ── Users (Clients) ───────────────────────────────────────────────────────────
 
 export const getUsers = (page = 1, limit = 20, search?: string, isBlocked?: boolean) => {
@@ -248,16 +237,3 @@ export const updateService = (id: string, data: Partial<ServiceFormData> & { isA
 
 export const deleteService = (id: string) =>
   request<void>("DELETE", `/services/${id}`);
-
-// ── App Settings ──────────────────────────────────────────────────────────────
-
-export interface AppSettings {
-  isPaidMode: boolean;
-  commissionRate: number;
-}
-
-export const getSettings = () =>
-  request<AppSettings>("GET", "/settings", undefined, false);
-
-export const updateSettings = (data: Partial<AppSettings>) =>
-  request<AppSettings>("PATCH", "/settings", data);

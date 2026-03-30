@@ -12,10 +12,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Eye, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
 
 const Verification = () => {
-  const { t } = useTranslation();
   const [medics, setMedics] = useState<AdminMedic[]>([]);
   const [loading, setLoading] = useState(true);
   const [rejectId, setRejectId] = useState<string | null>(null);
@@ -28,7 +26,7 @@ const Verification = () => {
       const data = await getPendingMedics();
       setMedics(data);
     } catch (e) {
-      toast.error(t("verification.toastError"));
+      toast.error("Ошибка загрузки");
     } finally {
       setLoading(false);
     }
@@ -41,13 +39,13 @@ const Verification = () => {
     try {
       await verifyMedic(id, "APPROVED");
       setMedics((prev) => prev.filter((m) => m.id !== id));
-      toast.success(t("verification.toastApproved"));
+      toast.success("Медик одобрен");
     } catch (e) {
-      toast.error(t("verification.toastApproveError"));
+      toast.error("Ошибка одобрения");
     } finally {
       setProcessing(null);
     }
-  }, [t]);
+  }, []);
 
   const handleReject = useCallback(async () => {
     if (!rejectId || !reason.trim()) return;
@@ -55,15 +53,15 @@ const Verification = () => {
     try {
       await verifyMedic(rejectId, "REJECTED", reason);
       setMedics((prev) => prev.filter((m) => m.id !== rejectId));
-      toast.success(t("verification.toastRejected"));
+      toast.success("Медик отклонён");
       setRejectId(null);
       setReason("");
     } catch (e) {
-      toast.error(t("verification.toastRejectError"));
+      toast.error("Ошибка отклонения");
     } finally {
       setProcessing(null);
     }
-  }, [reason, rejectId, t]);
+  }, [reason, rejectId]);
 
   useEffect(() => {
     if (medics.length === 0) {
@@ -122,7 +120,7 @@ const Verification = () => {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{t("verification.title")}</h1>
+        <h1 className="text-2xl font-bold">Верификация медиков</h1>
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/70 p-6 backdrop-blur-md animate-pulse h-48" />
         ))}
@@ -145,18 +143,18 @@ const Verification = () => {
         <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-300">Trust & Safety</p>
-            <h1 className="text-3xl font-semibold tracking-tight">{t("verification.title")}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">Верификация медиков</h1>
             <p className="text-sm text-muted-foreground dark:text-slate-300 mt-1">
-              {t("verification.subtitle")}
+              Быстрый review документов с горячими клавишами и последовательной навигацией.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="status-badge status-created">{t("verification.navHint")}</span>
-            <span className="status-badge status-approved">{t("verification.approveHint")}</span>
-            <span className="status-badge status-rejected">{t("verification.rejectHint")}</span>
+            <span className="status-badge status-created">↑↓ навигация</span>
+            <span className="status-badge status-approved">A одобрить</span>
+            <span className="status-badge status-rejected">R отклонить</span>
             <span className="status-badge status-pending">
               <Clock className="h-3 w-3 mr-1" />
-              {t("verification.waitingCount", { count: medics.length })}
+              {medics.length} ожидают
             </span>
           </div>
         </div>
@@ -165,32 +163,32 @@ const Verification = () => {
       <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-white/50 dark:border-slate-700/60 bg-gradient-to-br from-amber-50/70 to-orange-100/70 dark:from-slate-900/90 dark:to-amber-950/30 p-3">
-            <p className="text-xs text-muted-foreground dark:text-slate-300">{t("verification.queue")}</p>
+            <p className="text-xs text-muted-foreground dark:text-slate-300">В очереди</p>
             <p className="text-xl font-semibold text-amber-800 dark:text-amber-200">{medics.length}</p>
           </div>
           <div className="rounded-xl border border-white/50 dark:border-slate-700/60 bg-gradient-to-br from-emerald-50/70 to-teal-100/70 dark:from-slate-900/90 dark:to-emerald-950/30 p-3">
-            <p className="text-xs text-muted-foreground dark:text-slate-300">{t("verification.hotkey")}</p>
+            <p className="text-xs text-muted-foreground dark:text-slate-300">Горячая клавиша</p>
             <p className="text-xl font-semibold text-emerald-800 dark:text-emerald-200">A</p>
           </div>
           <div className="rounded-xl border border-white/50 dark:border-slate-700/60 bg-gradient-to-br from-rose-50/70 to-pink-100/70 dark:from-slate-900/90 dark:to-rose-950/30 p-3">
-            <p className="text-xs text-muted-foreground dark:text-slate-300">{t("verification.hotkey")}</p>
+            <p className="text-xs text-muted-foreground dark:text-slate-300">Горячая клавиша</p>
             <p className="text-xl font-semibold text-rose-800 dark:text-rose-200">R</p>
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t("verification.requests")}</h2>
+        <h2 className="text-lg font-semibold">Заявки на проверку</h2>
         <div className="flex items-center gap-2">
-          <span className="status-badge status-created">{t("verification.navHint")}</span>
-          <span className="status-badge status-approved">{t("verification.approveHint")}</span>
-          <span className="status-badge status-rejected">{t("verification.rejectHint")}</span>
+          <span className="status-badge status-created">↑↓ навигация</span>
+          <span className="status-badge status-approved">A одобрить</span>
+          <span className="status-badge status-rejected">R отклонить</span>
         </div>
       </div>
 
       {medics.length === 0 && (
         <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-gradient-to-br from-white/80 to-cyan-50/80 dark:from-slate-900/90 dark:to-cyan-950/20 text-center py-16 text-muted-foreground dark:text-slate-300 backdrop-blur-md">
-          {t("verification.noMedics")}
+          Нет медиков, ожидающих верификации.
         </div>
       )}
 
@@ -215,8 +213,8 @@ const Verification = () => {
                 <h3 className="text-base font-semibold">{medic.name}</h3>
                 <p className="text-xs text-muted-foreground dark:text-slate-300">{medic.phone}</p>
                 <div className="flex gap-3 mt-1 text-xs text-muted-foreground dark:text-slate-300">
-                  <span>{t("verification.experience")}: {medic.experienceYears} {t("verification.years")}</span>
-                  <span>{t("orders.date")}: {new Date(medic.created_at).toLocaleDateString("ru-RU")}</span>
+                  <span>Опыт: {medic.experienceYears} лет</span>
+                  <span>Дата: {new Date(medic.created_at).toLocaleDateString("ru-RU")}</span>
                 </div>
               </div>
 
@@ -225,7 +223,7 @@ const Verification = () => {
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
-                        <Eye className="h-4 w-4 mr-1" /> {t("verification.photo")}
+                        <Eye className="h-4 w-4 mr-1" /> Фото
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
@@ -237,7 +235,7 @@ const Verification = () => {
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
-                        <Eye className="h-4 w-4 mr-1" /> {t("verification.license")}
+                        <Eye className="h-4 w-4 mr-1" /> Лицензия
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
@@ -255,7 +253,7 @@ const Verification = () => {
                 size="sm"
                 className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0"
               >
-                <CheckCircle2 className="h-4 w-4 mr-1" /> {t("verification.approve")}
+                <CheckCircle2 className="h-4 w-4 mr-1" /> Одобрить
               </Button>
               <Button
                 size="sm"
@@ -263,7 +261,7 @@ const Verification = () => {
                 onClick={() => setRejectId(medic.id)}
                 disabled={processing === medic.id}
               >
-                <XCircle className="h-4 w-4 mr-1" /> {t("verification.reject")}
+                <XCircle className="h-4 w-4 mr-1" /> Отклонить
               </Button>
             </div>
 
@@ -274,17 +272,17 @@ const Verification = () => {
                 className="space-y-2 rounded-xl border border-rose-200/70 dark:border-rose-900/40 bg-rose-50/70 dark:bg-rose-950/25 p-3"
               >
                 <Textarea
-                  placeholder={t("verification.rejectReason")}
+                  placeholder="Причина отклонения..."
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className="bg-white/90 dark:bg-slate-900/80"
                 />
                 <div className="flex gap-2">
                   <Button className="bg-rose-600 hover:bg-rose-700 text-white" size="sm" onClick={handleReject} disabled={!reason.trim()}>
-                    {t("verification.confirmReject")}
+                    Подтвердить отклонение
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => { setRejectId(null); setReason(""); }}>
-                    {t("common.cancel")}
+                    Отмена
                   </Button>
                 </div>
               </motion.div>

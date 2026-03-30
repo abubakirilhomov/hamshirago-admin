@@ -4,10 +4,8 @@ import { adminLogin } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import { useLanguage } from "@/context/LanguageContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -15,8 +13,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { language, setLanguage } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +25,7 @@ const Login = () => {
       await adminLogin(username.trim(), password);
       navigate("/");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "";
-      setError(msg === "TOO_MANY_REQUESTS" ? t("login.tooManyAttempts") : msg || t("login.errorServer"));
+      setError(err instanceof Error ? err.message : "Произошла ошибка");
     } finally {
       setLoading(false);
     }
@@ -38,43 +33,21 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-background">
-      {/* Gradient header */}
+      {/* Gradient header — same as web/web-medic */}
       <div
         className="w-full flex flex-col items-center pt-16 pb-12 px-4"
         style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
       >
-        <img
-          src="/logo.png"
-          alt="HamshiraGo"
-          className="mb-3"
-          style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover" }}
-        />
+        <div
+          className="flex h-[72px] w-[72px] items-center justify-center rounded-full mb-3"
+          style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+        >
+          <Stethoscope className="h-9 w-9 text-white" />
+        </div>
         <h1 className="text-[26px] font-bold text-white">HamshiraGo</h1>
         <p className="text-[15px] mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
-          {t("login.title")}
+          Панель администратора
         </p>
-
-        {/* Language switcher */}
-        <div className="flex gap-2 mt-4">
-          {(["ru", "uz"] as const).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              style={{
-                padding: "4px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.4)",
-                background: language === lang ? "rgba(255,255,255,0.25)" : "transparent",
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: language === lang ? 700 : 500,
-                cursor: "pointer",
-              }}
-            >
-              {lang === "ru" ? "RU" : "UZ"}
-            </button>
-          ))}
-        </div>
       </div>
 
       <motion.div
@@ -84,7 +57,7 @@ const Login = () => {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">{t("login.username")}</Label>
+            <Label htmlFor="username">Логин</Label>
             <Input
               id="username"
               type="text"
@@ -99,7 +72,7 @@ const Login = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">{t("login.password")}</Label>
+            <Label htmlFor="password">Пароль</Label>
             <Input
               id="password"
               type="password"
@@ -131,10 +104,10 @@ const Login = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("login.loggingIn") ?? "..."}
+                Вход...
               </>
             ) : (
-              t("login.submit")
+              "Войти"
             )}
           </Button>
         </form>
