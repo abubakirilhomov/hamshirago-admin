@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAllMedics, blockMedic, type AdminMedic } from "@/lib/api";
+import { getAllMedics, blockMedic, topupMedic, type AdminMedic } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Table,
@@ -14,7 +17,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { ShieldAlert, Star, Users, UserCheck, Wifi } from "lucide-react";
+import { ShieldAlert, Star, Users, UserCheck, Wifi, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Medics = () => {
@@ -22,6 +25,9 @@ const Medics = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [onlineFilter, setOnlineFilter] = useState<"ALL" | "ONLINE" | "OFFLINE">("ALL");
+  const [topupTarget, setTopupTarget] = useState<AdminMedic | null>(null);
+  const [topupAmount, setTopupAmount] = useState("");
+  const [topupLoading, setTopupLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -46,6 +52,33 @@ const Medics = () => {
       toast.success(isBlocked ? "Медик заблокирован" : "Медик разблокирован");
     } catch (e) {
       toast.error("Ошибка");
+    }
+  };
+
+  const handleTopup = async () => {
+    if (!topupTarget) return;
+    const amount = Number(topupAmount);
+    if (!topupAmount || isNaN(amount) || amount <= 0) {
+      toast.error("Введите корректную сумму");
+      return;
+    }
+    setTopupLoading(true);
+    try {
+      await topupMedic(topupTarget.id, amount);
+      setMedics((prev) =>
+        prev.map((m) =>
+          m.id === topupTarget.id
+            ? { ...m, balance: Number(m.balance) + amount }
+            : m
+        )
+      );
+      toast.success(`Баланс пополнен на ${amount.toLocaleString("ru-RU")} UZS`);
+      setTopupTarget(null);
+      setTopupAmount("");
+    } catch {
+      toast.error("Ошибка пополнения баланса");
+    } finally {
+      setTopupLoading(false);
     }
   };
 
@@ -145,20 +178,21 @@ const Medics = () => {
               <TableHead>Рейтинг</TableHead>
               <TableHead>Баланс</TableHead>
               <TableHead>Заблокирован</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 8 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredMedics.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   Нет данных
                 </TableCell>
               </TableRow>
@@ -189,12 +223,70 @@ const Medics = () => {
                       onCheckedChange={(v) => handleBlock(m.id, v)}
                     />
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1"
+                      onClick={() => { setTopupTarget(m); setTopupAmount(""); }}
+                    >
+                      <Wallet className="h-3.5 w-3.5" />
+                      Пополнить
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Topup dialog */}
+      <Dialog open={!!topupTarget} onOpenChange={(open) => { if (!open) { setTopupTarget(null); setTopupAmount(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-emerald-500" />
+              Пополнить баланс медика
+            </DialogTitle>
+          </DialogHeader>
+          {topupTarget && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Медик: <span className="font-semibold text-foreground">{topupTarget.name ?? topupTarget.phone}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Текущий баланс:{" "}
+                <span className="font-semibold text-foreground">
+                  {Number(topupTarget.balance).toLocaleString("ru-RU")} UZS
+                </span>
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="topupAmount">Сумма пополнения (UZS)</Label>
+                <Input
+                  id="topupAmount"
+                  type="number"
+                  min={1}
+                  step={1000}
+                  placeholder="10000"
+                  value={topupAmount}
+                  onChange={(e) => setTopupAmount(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleTopup(); }}
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setTopupTarget(null); setTopupAmount(""); }} disabled={topupLoading}>
+              Отмена
+            </Button>
+            <Button onClick={handleTopup} disabled={topupLoading}>
+              {topupLoading ? "Пополнение..." : "Пополнить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

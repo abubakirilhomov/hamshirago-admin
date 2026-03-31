@@ -2,19 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { getSettings, updateSettings } from "@/lib/api";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Settings2, CreditCard, Info, Percent } from "lucide-react";
+import { Settings2, CreditCard, Info, Percent, Clock, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const Settings = () => {
   const { t } = useTranslation();
   const [isPaidMode, setIsPaidMode] = useState(false);
   const [commissionRate, setCommissionRate] = useState(10);
+  const [urgentFeePercent, setUrgentFeePercent] = useState(30);
+  const [urgentStartHour, setUrgentStartHour] = useState(22);
+  const [urgentEndHour, setUrgentEndHour] = useState(6);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingRate, setSavingRate] = useState(false);
+  const [savingUrgent, setSavingUrgent] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -22,6 +29,9 @@ const Settings = () => {
       .then((s) => {
         setIsPaidMode(s.isPaidMode);
         setCommissionRate(s.commissionRate ?? 10);
+        setUrgentFeePercent(s.urgentFeePercent ?? 30);
+        setUrgentStartHour(s.urgentStartHour ?? 22);
+        setUrgentEndHour(s.urgentEndHour ?? 6);
       })
       .catch(() => toast.error(t("settings.toastLoadError")))
       .finally(() => setLoading(false));
@@ -37,6 +47,26 @@ const Settings = () => {
       toast.error(t("settings.toastError"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveUrgent = async () => {
+    if (urgentStartHour < 0 || urgentStartHour > 23 || urgentEndHour < 0 || urgentEndHour > 23) {
+      toast.error("Часы должны быть от 0 до 23");
+      return;
+    }
+    if (urgentFeePercent < 0 || urgentFeePercent > 100) {
+      toast.error("Наценка должна быть от 0 до 100%");
+      return;
+    }
+    setSavingUrgent(true);
+    try {
+      await updateSettings({ urgentFeePercent, urgentStartHour, urgentEndHour });
+      toast.success("Настройки срочного режима сохранены");
+    } catch {
+      toast.error(t("settings.toastError"));
+    } finally {
+      setSavingUrgent(false);
     }
   };
 
@@ -151,6 +181,89 @@ const Settings = () => {
               </p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Urgent settings card */}
+      <div className="rounded-2xl border border-white/40 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-6 space-y-5">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex-shrink-0">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-base">Срочный режим (ночная наценка)</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              В указанные часы к цене заказа автоматически добавляется наценка
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="urgentFeePercent">Наценка (%)</Label>
+            {loading ? (
+              <Skeleton className="h-9 w-full" />
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  id="urgentFeePercent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={urgentFeePercent}
+                  onChange={(e) => setUrgentFeePercent(Number(e.target.value))}
+                />
+                <Percent className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="urgentStartHour">Час начала</Label>
+            {loading ? (
+              <Skeleton className="h-9 w-full" />
+            ) : (
+              <Input
+                id="urgentStartHour"
+                type="number"
+                min={0}
+                max={23}
+                step={1}
+                value={urgentStartHour}
+                onChange={(e) => setUrgentStartHour(Number(e.target.value))}
+                placeholder="22"
+              />
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="urgentEndHour">Час окончания</Label>
+            {loading ? (
+              <Skeleton className="h-9 w-full" />
+            ) : (
+              <Input
+                id="urgentEndHour"
+                type="number"
+                min={0}
+                max={23}
+                step={1}
+                value={urgentEndHour}
+                onChange={(e) => setUrgentEndHour(Number(e.target.value))}
+                placeholder="6"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSaveUrgent}
+            disabled={savingUrgent || loading}
+            size="sm"
+            variant="secondary"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {savingUrgent ? "Сохранение..." : "Сохранить срочный режим"}
+          </Button>
         </div>
       </div>
 

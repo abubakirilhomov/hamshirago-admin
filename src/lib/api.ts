@@ -238,6 +238,44 @@ export const updateService = (id: string, data: Partial<ServiceFormData> & { isA
 export const deleteService = (id: string) =>
   request<void>("DELETE", `/services/${id}`);
 
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+export interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  authorRole: "client" | "medic";
+  targetRole: "medic" | "client";
+}
+
+export const getMedicReviews = (medicId: string) =>
+  request<Review[]>("GET", `/reviews/medic/${medicId}`);
+
+export const getClientReviews = (clientId: string) =>
+  request<Review[]>("GET", `/reviews/client/${clientId}`);
+
+// ── Medic balance top-up ──────────────────────────────────────────────────────
+
+export const topupMedic = (id: string, amount: number) =>
+  request<void>("POST", `/medics/admin/${id}/topup`, { amount });
+
+// ── App Settings ──────────────────────────────────────────────────────────────
+
+export interface AppSettings {
+  isPaidMode: boolean;
+  commissionRate: number;
+  urgentFeePercent: number;
+  urgentStartHour: number;
+  urgentEndHour: number;
+}
+
+export const getSettings = () =>
+  request<AppSettings>("GET", "/settings");
+
+export const updateSettings = (data: Partial<AppSettings>) =>
+  request<AppSettings>("PATCH", "/settings", data);
+
 // ── Client Errors (User Support) ──────────────────────────────────────────────
 
 export interface ClientError {

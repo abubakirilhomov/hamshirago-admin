@@ -8,6 +8,8 @@ import {
   BarChart2,
   LogOut,
   HeartPulse,
+  Star,
+  Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +37,8 @@ const navItems = [
   { title: "Услуги", url: "/services", icon: Package },
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
   { title: "User Support", url: "/user-support", icon: HeartPulse },
+  { title: "Отзывы", url: "/reviews", icon: Star },
+  { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
