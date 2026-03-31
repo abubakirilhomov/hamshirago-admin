@@ -7,10 +7,12 @@ import {
   Package,
   BarChart2,
   LogOut,
+  HeartPulse,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
-import { clearAdminToken as clearAdminSecret } from "@/lib/api";
+import { clearAdminToken as clearAdminSecret, getClientErrorStats } from "@/lib/api";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -32,12 +34,20 @@ const navItems = [
   { title: "Заказы", url: "/orders", icon: ClipboardList },
   { title: "Услуги", url: "/services", icon: Package },
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
+  { title: "User Support", url: "/user-support", icon: HeartPulse },
 ];
 
 export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const [newErrorsCount, setNewErrorsCount] = useState(0);
+
+  useEffect(() => {
+    getClientErrorStats()
+      .then((s) => setNewErrorsCount(s.NEW))
+      .catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     clearAdminSecret();
@@ -82,8 +92,17 @@ export function AdminSidebar() {
                       className="hover:bg-sidebar-accent/80 rounded-md"
                       activeClassName="bg-gradient-to-r from-cyan-500/15 to-teal-500/15 text-teal-700 dark:text-cyan-300 font-medium rounded-md"
                     >
-                      <item.icon className="h-4 w-4 mr-2" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <item.icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                      {!collapsed && (
+                        <span className="flex items-center gap-2 w-full">
+                          {item.title}
+                          {item.url === "/user-support" && newErrorsCount > 0 && (
+                            <span className="ml-auto text-xs font-bold bg-red-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+                              {newErrorsCount}
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

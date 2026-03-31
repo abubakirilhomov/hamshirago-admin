@@ -237,3 +237,39 @@ export const updateService = (id: string, data: Partial<ServiceFormData> & { isA
 
 export const deleteService = (id: string) =>
   request<void>("DELETE", `/services/${id}`);
+
+// ── Client Errors (User Support) ──────────────────────────────────────────────
+
+export interface ClientError {
+  id: string;
+  message: string;
+  stack?: string | null;
+  errorCode?: string | null;
+  userId?: string | null;
+  appType?: string | null;
+  appVersion?: string | null;
+  url?: string | null;
+  deviceInfo?: string | null;
+  status: string;
+  count?: number;
+  createdAt: string;
+}
+
+export interface ClientErrorStats {
+  NEW: number;
+  IN_PROGRESS: number;
+  FIXED: number;
+  IGNORED: number;
+}
+
+export const getClientErrors = (params: { page?: number; limit?: number; status?: string }) => {
+  const q = new URLSearchParams({ page: String(params.page ?? 1), limit: String(params.limit ?? 20) });
+  if (params.status) q.set("status", params.status);
+  return request<PaginatedResponse<ClientError>>("GET", `/client-errors/admin?${q}`);
+};
+
+export const updateClientErrorStatus = (id: string, status: string) =>
+  request<void>("PATCH", `/client-errors/admin/${id}`, { status });
+
+export const getClientErrorStats = () =>
+  request<ClientErrorStats>("GET", "/client-errors/admin/stats");
