@@ -16,6 +16,7 @@ import Reports from "./pages/Reports";
 import UserSupport from "./pages/UserSupport";
 import Reviews from "./pages/Reviews";
 import Settings from "./pages/Settings";
+import Nps from "./pages/Nps";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/reports" element={<AdminLayout><Reports /></AdminLayout>} />
             <Route path="/user-support" element={<AdminLayout><UserSupport /></AdminLayout>} />
             <Route path="/reviews" element={<AdminLayout><Reviews /></AdminLayout>} />
+            <Route path="/nps" element={<AdminLayout><Nps /></AdminLayout>} />
             <Route path="/settings" element={<AdminLayout><Settings /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

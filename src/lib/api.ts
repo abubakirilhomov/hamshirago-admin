@@ -312,5 +312,23 @@ export const getClientErrors = (params: { page?: number; limit?: number; status?
 export const updateClientErrorStatus = (id: string, status: string) =>
   request<void>("PATCH", `/client-errors/admin/${id}`, { status });
 
+// ── NPS ───────────────────────────────────────────────────────────────────────
+
+export interface NpsMonthStat {
+  month: string;
+  nps: number;
+  total: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+}
+
+export interface NpsStats {
+  overall: NpsMonthStat;
+  monthly: NpsMonthStat[];
+}
+
+export const getNpsStats = () => request<NpsStats>("GET", "/nps/admin/stats");
+
 export const getClientErrorStats = () =>
   request<ClientErrorStats>("GET", "/client-errors/admin/stats");

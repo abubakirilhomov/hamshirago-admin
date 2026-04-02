@@ -10,6 +10,7 @@ import {
   HeartPulse,
   Star,
   Settings,
+  ThumbsUp,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,7 @@ const navItems = [
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
   { title: "User Support", url: "/user-support", icon: HeartPulse },
   { title: "Отзывы", url: "/reviews", icon: Star },
+  { title: "NPS", url: "/nps", icon: ThumbsUp },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 
