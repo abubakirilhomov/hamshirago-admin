@@ -29,6 +29,9 @@ export interface AdminMedic {
   facePhotoUrl: string | null;
   licensePhotoUrl: string | null;
   created_at: string;
+  workZoneLat: number | null;
+  workZoneLng: number | null;
+  workZoneRadius: number | null;
 }
 
 export interface AdminUser {
