@@ -11,6 +11,8 @@ import {
   Star,
   Settings,
   ThumbsUp,
+  MessageSquare,
+  PieChart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -37,8 +39,10 @@ const navItems = [
   { title: "Заказы", url: "/orders", icon: ClipboardList },
   { title: "Услуги", url: "/services", icon: Package },
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
+  { title: "Аналитика", url: "/analytics", icon: PieChart },
   { title: "User Support", url: "/user-support", icon: HeartPulse },
   { title: "Отзывы", url: "/reviews", icon: Star },
+  { title: "Консультации", url: "/consultations", icon: MessageSquare },
   { title: "NPS", url: "/nps", icon: ThumbsUp },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];

@@ -330,5 +330,39 @@ export interface NpsStats {
 
 export const getNpsStats = () => request<NpsStats>("GET", "/nps/admin/stats");
 
+// ── Consultations (Admin) ─────────────────────────────────────────────────────
+
+export interface AdminConsultation {
+  id: string;
+  clientId: string;
+  doctorId: string;
+  doctor: { id: string; name: string; specialization: string } | null;
+  status: "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELED";
+  symptoms: string | null;
+  doctorNotes: string | null;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getAdminConsultations = (page = 1, limit = 20, status?: string) => {
+  let path = `/consultations/admin/all?page=${page}&limit=${limit}`;
+  if (status) path += `&status=${status}`;
+  return request<PaginatedResponse<AdminConsultation>>("GET", path);
+};
+
+export const completeConsultation = (
+  id: string,
+  doctorNotes?: string,
+  createOrderServiceId?: string,
+) =>
+  request<AdminConsultation & { prescription?: unknown }>("PATCH", `/consultations/admin/${id}/complete`, {
+    ...(doctorNotes ? { doctorNotes } : {}),
+    ...(createOrderServiceId ? { createOrderServiceId } : {}),
+  });
+
+export const cancelAdminConsultation = (id: string) =>
+  request<void>("PATCH", `/consultations/admin/${id}/cancel`);
+
 export const getClientErrorStats = () =>
   request<ClientErrorStats>("GET", "/client-errors/admin/stats");
