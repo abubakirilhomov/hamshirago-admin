@@ -13,6 +13,9 @@ import {
   ThumbsUp,
   MessageSquare,
   PieChart,
+  Ticket,
+  CreditCard,
+  ShieldCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +46,11 @@ const navItems = [
   { title: "User Support", url: "/user-support", icon: HeartPulse },
   { title: "Отзывы", url: "/reviews", icon: Star },
   { title: "Консультации", url: "/consultations", icon: MessageSquare },
+  { title: "Врачи", url: "/doctors", icon: Stethoscope },
   { title: "NPS", url: "/nps", icon: ThumbsUp },
+  { title: "Промо-коды", url: "/promo-codes", icon: Ticket },
+  { title: "Подписки", url: "/subscription-tiers", icon: CreditCard },
+  { title: "Аудит-лог", url: "/audit-log", icon: ShieldCheck },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];
 

@@ -16,8 +16,9 @@ import {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+// Локальная дата YYYY-MM-DD (с учётом timezone браузера)
 function toDateStr(d: Date) {
-  return d.toISOString().split("T")[0];
+  return d.toLocaleDateString("sv");
 }
 
 function getISOWeek(d: Date): string {
@@ -53,25 +54,26 @@ const Analytics = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // Load all orders (all statuses) — pages until exhausted
-      const PAGE = 100;
-      const first = await getOrders(1, 1);
-      if (first.total === 0) { setAllOrders([]); setLoading(false); return; }
-      const totalPages = Math.ceil(first.total / PAGE);
-      const pages = await Promise.all(
-        Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE))
-      );
-      setAllOrders(pages.flatMap((p) => p.data));
+      // Загружаем заказы только за 90 дней (максимальный период)
+      // Останавливаемся как только встречаем заказы старше cutoff (сортировка DESC)
+      const cutoff90 = new Date();
+      cutoff90.setDate(cutoff90.getDate() - 90);
+      const collected: AdminOrder[] = [];
+      let pg = 1;
+      while (true) {
+        const res = await getOrders(pg, 100);
+        if (res.data.length === 0) break;
+        collected.push(...res.data);
+        const last = res.data[res.data.length - 1];
+        if (!last || new Date(last.created_at) < cutoff90 || pg >= res.totalPages) break;
+        pg++;
+      }
+      setAllOrders(collected);
 
-      // Load all medics for name lookup
+      // Медики: только первые 100 для lookup имён (достаточно для топ-10)
       const mFirst = await getAllMedics(1, 100);
-      const mTotalPages = Math.ceil(mFirst.total / 100);
-      const mPages = mTotalPages > 1
-        ? await Promise.all(Array.from({ length: mTotalPages - 1 }, (_, i) => getAllMedics(i + 2, 100)))
-        : [];
-      const allMedics = [...mFirst.data, ...mPages.flatMap((p) => p.data)];
       const map = new Map<string, AdminMedic>();
-      allMedics.forEach((m) => map.set(m.id, m));
+      mFirst.data.forEach((m) => map.set(m.id, m));
       setMedicsMap(map);
     } catch (e) {
       console.error("Analytics load error:", e);

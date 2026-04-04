@@ -69,8 +69,18 @@ const Orders = () => {
     try {
       const activeSearch = searchText.trim().toLowerCase();
       if (activeSearch) {
-        const data = await getOrders(1, 100, status === "ALL" ? undefined : status);
-        const filtered = data.data.filter((order) => {
+        // Загружаем все страницы для полнотекстового поиска (до 1000 заказов)
+        const statusFilter = status === "ALL" ? undefined : status;
+        const first = await getOrders(1, 100, statusFilter);
+        const allData: AdminOrder[] = [...first.data];
+        const maxPages = Math.min(first.totalPages, 10); // cap: 1000 заказов
+        if (maxPages > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: maxPages - 1 }, (_, i) => getOrders(i + 2, 100, statusFilter))
+          );
+          rest.forEach((r) => allData.push(...r.data));
+        }
+        const filtered = allData.filter((order) => {
           const id = String(order.id ?? "").toLowerCase();
           const service = String(order.serviceTitle ?? "").toLowerCase();
           const address = String(order.location?.house ?? "").toLowerCase();

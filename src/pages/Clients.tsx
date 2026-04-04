@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { getUsers, blockClient, type AdminUser } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -22,6 +22,7 @@ const Clients = () => {
   const [searchInput, setSearchInput] = useState("");
 
   const blockedCount = users.filter((u) => u.isBlocked).length;
+  const isMounted = useRef(false);
 
   const load = useCallback(async (p: number, q: string) => {
     setLoading(true);
@@ -41,8 +42,9 @@ const Clients = () => {
 
   useEffect(() => { load(1, ""); }, [load]);
 
-  // Поиск с задержкой
+  // Поиск с задержкой — пропускаем первый рендер, чтобы не дублировать начальную загрузку
   useEffect(() => {
+    if (!isMounted.current) { isMounted.current = true; return; }
     const t = setTimeout(() => {
       setSearch(searchInput);
       load(1, searchInput);

@@ -44,8 +44,15 @@ const Medics = () => {
   useEffect(() => {
     async function load() {
       try {
-        const res = await getAllMedics(1, 100);
-        setMedics(res.data);
+        const first = await getAllMedics(1, 100);
+        const allData = [...first.data];
+        if (first.totalPages > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: first.totalPages - 1 }, (_, i) => getAllMedics(i + 2, 100))
+          );
+          rest.forEach((r) => allData.push(...r.data));
+        }
+        setMedics(allData);
       } catch (e) {
         console.error(e);
       } finally {

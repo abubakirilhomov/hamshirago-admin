@@ -25,7 +25,11 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dailyOrders, setDailyOrders] = useState<{ day: string; orders: number }[]>([]);
 
-  const load = useCallback(async () => {
+  // Локальная дата в формате YYYY-MM-DD (с учётом timezone браузера)
+  const localDate = (d: Date) => d.toLocaleDateString("sv"); // "sv" locale = YYYY-MM-DD
+
+  // Лёгкая загрузка: только счётчики + заказы за 7 дней (запускается каждые 30с)
+  const loadLight = useCallback(async () => {
     try {
       const [allOrders, doneOrders, canceledOrders, pending] = await Promise.all([
         getOrders(1, 1),
@@ -34,23 +38,9 @@ const Dashboard = () => {
         getPendingMedics(),
       ]);
 
-      // Загружаем ВСЕ страницы DONE заказов параллельно для точного подсчёта дохода
-      let revenue = 0;
-      if (doneOrders.total > 0) {
-        const PAGE = 100;
-        const totalPages = Math.ceil(doneOrders.total / PAGE);
-        const pages = await Promise.all(
-          Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
-        );
-        revenue = pages
-          .flatMap(p => p.data)
-          .reduce((sum: number, o: AdminOrder) => sum + (o.platformFee || 0), 0);
-      }
-
-      // Загружаем страницы пока не дойдём до заказов старше 7 дней (сортировка DESC)
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 7);
-      const today = new Date().toISOString().split("T")[0];
+      const today = localDate(new Date());
       const recentData: AdminOrder[] = [];
       let page = 1;
       while (true) {
@@ -61,15 +51,19 @@ const Dashboard = () => {
         page++;
       }
 
-      const todayCount = recentData.filter((o) => o.created_at?.startsWith(today)).length;
+      const todayCount = recentData.filter(
+        (o) => o.created_at && localDate(new Date(o.created_at)) === today
+      ).length;
+
       const last7Days = new Map<string, number>();
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        last7Days.set(d.toISOString().split("T")[0], 0);
+        last7Days.set(localDate(d), 0);
       }
       recentData.forEach((o) => {
-        const key = String(o.created_at || "").split("T")[0];
+        if (!o.created_at) return;
+        const key = localDate(new Date(o.created_at));
         if (last7Days.has(key)) last7Days.set(key, (last7Days.get(key) || 0) + 1);
       });
       const chartData = Array.from(last7Days.entries()).map(([date, orders]) => ({
@@ -78,14 +72,14 @@ const Dashboard = () => {
       }));
       setDailyOrders(chartData);
 
-      setStats({
+      setStats((prev) => ({
+        ...prev,
         totalOrders: allOrders.total,
         doneOrders: doneOrders.total,
         canceledOrders: canceledOrders.total,
         pendingMedics: pending.length,
-        totalRevenue: revenue,
         todayOrders: todayCount,
-      });
+      }));
     } catch (e) {
       console.error("Dashboard load error:", e);
     } finally {
@@ -93,11 +87,31 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Тяжёлая загрузка: revenue по всем DONE заказам — только при монтировании
+  const loadRevenue = useCallback(async () => {
+    try {
+      const doneOrders = await getOrders(1, 1, "DONE");
+      if (doneOrders.total === 0) return;
+      const PAGE = 100;
+      const totalPages = Math.ceil(doneOrders.total / PAGE);
+      const pages = await Promise.all(
+        Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
+      );
+      const revenue = pages
+        .flatMap((p) => p.data)
+        .reduce((sum: number, o: AdminOrder) => sum + (o.platformFee || 0), 0);
+      setStats((prev) => ({ ...prev, totalRevenue: revenue }));
+    } catch (e) {
+      console.error("Dashboard revenue load error:", e);
+    }
+  }, []);
+
   useEffect(() => {
-    load();
-    const intervalId = window.setInterval(load, 30_000);
+    loadLight();
+    loadRevenue();
+    const intervalId = window.setInterval(loadLight, 30_000);
     return () => window.clearInterval(intervalId);
-  }, [load]);
+  }, [loadLight, loadRevenue]);
 
   const formatUZS = (n: number) => `${n.toLocaleString("ru-RU")} UZS`;
   const successRate = stats.totalOrders > 0 ? Math.round((stats.doneOrders / stats.totalOrders) * 100) : 0;
@@ -279,7 +293,7 @@ const Dashboard = () => {
         >
           <p className="text-sm font-semibold">Состояние потока заказов</p>
           <p className="mt-2 text-sm text-muted-foreground dark:text-slate-300">
-            Сегодня в обработке: <span className="font-semibold text-foreground">{stats.totalOrders - stats.doneOrders - stats.canceledOrders}</span>
+            В процессе сейчас: <span className="font-semibold text-foreground">{stats.totalOrders - stats.doneOrders - stats.canceledOrders}</span>
           </p>
           <div className="mt-4 grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/70 p-3">

@@ -1,4 +1,5 @@
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { hasAdminToken as hasAdminSecret } from "@/lib/api";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
@@ -8,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = () => navigate("/login", { replace: true });
+    window.addEventListener("admin:unauthorized", handler);
+    return () => window.removeEventListener("admin:unauthorized", handler);
+  }, [navigate]);
+
   if (!hasAdminSecret()) {
     return <Navigate to="/login" replace />;
   }

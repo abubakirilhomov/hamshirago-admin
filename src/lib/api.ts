@@ -103,7 +103,8 @@ export function hasAdminToken(): boolean {
   const token = localStorage.getItem("admin_token");
   if (!token) return false;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1])) as { exp?: number };
+    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(token.split(".")[1].length / 4) * 4, "=");
+    const payload = JSON.parse(atob(b64)) as { exp?: number };
     return typeof payload.exp === "number" && payload.exp * 1000 > Date.now();
   } catch {
     return false;
@@ -149,7 +150,7 @@ async function request<T>(
 
   if (res.status === 401) {
     clearAdminToken();
-    window.location.href = "/login";
+    window.dispatchEvent(new CustomEvent("admin:unauthorized"));
     throw new Error("Unauthorized");
   }
 
@@ -366,3 +367,143 @@ export const cancelAdminConsultation = (id: string) =>
 
 export const getClientErrorStats = () =>
   request<ClientErrorStats>("GET", "/client-errors/admin/stats");
+
+// ── Promo Codes ───────────────────────────────────────────────────────────────
+
+export interface AdminPromoCode {
+  id: string;
+  code: string;
+  discountAmount: number | null;
+  discountPercent: number | null;
+  maxUses: number | null;
+  usedCount: number;
+  expiresAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreatePromoCodeDto {
+  code: string;
+  discountAmount?: number;
+  discountPercent?: number;
+  maxUses?: number;
+  expiresAt?: string;
+}
+
+export const getPromoCodes = () =>
+  request<AdminPromoCode[]>("GET", "/promo/admin");
+
+export const createPromoCode = (dto: CreatePromoCodeDto) =>
+  request<AdminPromoCode>("POST", "/promo/admin", dto);
+
+export const deactivatePromoCode = (id: string) =>
+  request<AdminPromoCode>("PATCH", `/promo/admin/${id}/deactivate`);
+
+// ── Subscription Tiers ────────────────────────────────────────────────────────
+
+export interface AdminSubscriptionTier {
+  id: string;
+  name: string;
+  nameUz: string;
+  description: string;
+  price: number;
+  billingDays: number;
+  maxOrders: number;
+  discountPercent: number;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface SubscriptionStats {
+  active: number;
+  expired: number;
+  canceled: number;
+}
+
+export interface SubscriptionTierFormData {
+  name: string;
+  nameUz: string;
+  description: string;
+  price: number;
+  billingDays: number;
+  maxOrders: number;
+  discountPercent: number;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export const getAdminTiers = () =>
+  request<AdminSubscriptionTier[]>("GET", "/subscriptions/admin/tiers");
+
+export const createTier = (data: SubscriptionTierFormData) =>
+  request<AdminSubscriptionTier>("POST", "/subscriptions/admin/tiers", data);
+
+export const updateTier = (id: string, data: Partial<SubscriptionTierFormData>) =>
+  request<AdminSubscriptionTier>("PATCH", `/subscriptions/admin/tiers/${id}`, data);
+
+export const getSubscriptionStats = () =>
+  request<SubscriptionStats>("GET", "/subscriptions/admin/stats");
+
+// ── Doctors (Admin) ───────────────────────────────────────────────────────────
+
+export interface AdminDoctor {
+  id: string;
+  name: string;
+  nameUz: string;
+  specialization: string;
+  specializationUz: string;
+  bio: string | null;
+  photoUrl: string | null;
+  pricePerConsultation: number;
+  phone: string | null;
+  rating: number | null;
+  consultationCount: number;
+  isActive: boolean;
+}
+
+export interface DoctorFormData {
+  name: string;
+  nameUz: string;
+  specialization: string;
+  specializationUz: string;
+  bio: string;
+  photoUrl: string;
+  pricePerConsultation: number;
+  phone: string;
+  isActive: boolean;
+}
+
+export const getAdminDoctors = () =>
+  request<AdminDoctor[]>("GET", "/consultations/admin/doctors");
+
+export const createDoctor = (data: DoctorFormData) =>
+  request<AdminDoctor>("POST", "/consultations/admin/doctors", data);
+
+export const updateDoctor = (id: string, data: Partial<DoctorFormData>) =>
+  request<AdminDoctor>("PATCH", `/consultations/admin/doctors/${id}`, data);
+
+// ── Audit Log ─────────────────────────────────────────────────────────────────
+
+export interface AuditLogEntry {
+  id: string;
+  adminId: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  details: string | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+export interface AuditLogResponse {
+  data: AuditLogEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const getAuditLog = (page = 1, limit = 20, action?: string) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (action) params.set("action", action);
+  return request<AuditLogResponse>("GET", `/admin/audit-log?${params}`);
+};

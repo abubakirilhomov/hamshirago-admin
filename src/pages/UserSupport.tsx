@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getClientErrors, updateClientErrorStatus, getClientErrorStats, type ClientError, type ClientErrorStats } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,7 @@ export default function UserSupport() {
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [search, setSearch] = useState("");
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selected, setSelected] = useState<ClientError | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -60,25 +61,45 @@ export default function UserSupport() {
     } catch { /* ignore */ }
   }
 
-  async function loadErrors() {
+  async function loadErrors(activeSearch?: string) {
     setLoading(true);
+    const q = activeSearch ?? search;
     try {
-      const data = await getClientErrors({
-        page,
-        limit: 20,
-        status: statusFilter === "ALL" ? undefined : statusFilter,
-      });
-      setErrors(data.data);
-      setTotalPages(data.totalPages);
-      setTotal(data.total);
-    } catch (err) {
+      if (q.trim()) {
+        // При поиске грузим до 500 ошибок (5 страниц × 100) для полного охвата
+        const statusVal = statusFilter === "ALL" ? undefined : statusFilter;
+        const first = await getClientErrors({ page: 1, limit: 100, status: statusVal });
+        const allData = [...first.data];
+        const maxPages = Math.min(first.totalPages, 5);
+        if (maxPages > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: maxPages - 1 }, (_, i) =>
+              getClientErrors({ page: i + 2, limit: 100, status: statusVal })
+            )
+          );
+          rest.forEach((r) => allData.push(...r.data));
+        }
+        setErrors(allData);
+        setTotalPages(1);
+        setTotal(allData.length);
+      } else {
+        const data = await getClientErrors({
+          page,
+          limit: 20,
+          status: statusFilter === "ALL" ? undefined : statusFilter,
+        });
+        setErrors(data.data);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+      }
+    } catch {
       toast.error("Ошибка загрузки ошибок");
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleStatusChange(id: string, status: string) {
+async function handleStatusChange(id: string, status: string) {
     setUpdatingId(id);
     try {
       await updateClientErrorStatus(id, status);
@@ -132,7 +153,12 @@ export default function UserSupport() {
         <Input
           placeholder="Поиск по ошибке, коду, userId..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSearch(val);
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = setTimeout(() => loadErrors(val), 400);
+          }}
           className="sm:max-w-xs"
         />
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>

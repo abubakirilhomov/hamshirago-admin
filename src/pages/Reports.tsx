@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+// Локальная дата YYYY-MM-DD (с учётом timezone браузера)
 function toDateStr(d: Date) {
-  return d.toISOString().split("T")[0];
+  return d.toLocaleDateString("sv");
 }
 
 function defaultFrom() {
@@ -77,26 +78,28 @@ const Reports = () => {
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
 
+  // Загружаем DONE заказы только начиная с даты `from` (останавливаемся по cutoff)
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const first = await getOrders(1, 1, "DONE");
-      if (first.total === 0) {
-        setAllDoneOrders([]);
-        return;
+      const cutoff = new Date(from + "T00:00:00");
+      const collected: AdminOrder[] = [];
+      let pg = 1;
+      while (true) {
+        const res = await getOrders(pg, 100, "DONE");
+        if (res.data.length === 0) break;
+        collected.push(...res.data);
+        const last = res.data[res.data.length - 1];
+        if (!last || new Date(last.created_at) < cutoff || pg >= res.totalPages) break;
+        pg++;
       }
-      const PAGE = 100;
-      const totalPages = Math.ceil(first.total / PAGE);
-      const pages = await Promise.all(
-        Array.from({ length: totalPages }, (_, i) => getOrders(i + 1, PAGE, "DONE"))
-      );
-      setAllDoneOrders(pages.flatMap((p) => p.data));
+      setAllDoneOrders(collected);
     } catch (e) {
       console.error("Reports load error:", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [from]);
 
   useEffect(() => {
     load();

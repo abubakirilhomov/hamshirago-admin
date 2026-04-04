@@ -19,6 +19,10 @@ import Settings from "./pages/Settings";
 import Nps from "./pages/Nps";
 import Consultations from "./pages/Consultations";
 import Analytics from "./pages/Analytics";
+import PromoCodes from "./pages/PromoCodes";
+import SubscriptionTiers from "./pages/SubscriptionTiers";
+import Doctors from "./pages/Doctors";
+import AuditLog from "./pages/AuditLog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +49,10 @@ const App = () => (
             <Route path="/consultations" element={<AdminLayout><Consultations /></AdminLayout>} />
             <Route path="/analytics" element={<AdminLayout><Analytics /></AdminLayout>} />
             <Route path="/settings" element={<AdminLayout><Settings /></AdminLayout>} />
+            <Route path="/promo-codes" element={<AdminLayout><PromoCodes /></AdminLayout>} />
+            <Route path="/subscription-tiers" element={<AdminLayout><SubscriptionTiers /></AdminLayout>} />
+            <Route path="/doctors" element={<AdminLayout><Doctors /></AdminLayout>} />
+            <Route path="/audit-log" element={<AdminLayout><AuditLog /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

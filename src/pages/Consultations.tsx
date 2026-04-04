@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   getAdminConsultations,
   completeConsultation,
@@ -82,7 +83,7 @@ function CompleteModal({
           {/* Doctor & patient info */}
           <div className="text-sm text-muted-foreground space-y-1">
             <p><span className="font-medium text-foreground">Врач:</span> {consultation.doctor?.name ?? "—"} ({consultation.doctor?.specialization ?? "—"})</p>
-            <p><span className="font-medium text-foreground">Клиент ID:</span> {consultation.clientId.slice(0, 8)}…</p>
+            <p><span className="font-medium text-foreground">Клиент ID:</span> {(consultation.clientId ?? "").slice(0, 8)}…</p>
             {consultation.symptoms && (
               <p><span className="font-medium text-foreground">Симптомы:</span> {consultation.symptoms}</p>
             )}
@@ -234,7 +235,7 @@ const Consultations = () => {
       await cancelAdminConsultation(id);
       load(page, statusFilter);
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Ошибка");
+      toast.error(e instanceof Error ? e.message : "Ошибка отмены консультации");
     } finally {
       setCancelingId(null);
     }
@@ -300,7 +301,7 @@ const Consultations = () => {
                         <p className="font-medium">{c.doctor?.name ?? "—"}</p>
                         <p className="text-xs text-muted-foreground">{c.doctor?.specialization ?? ""}</p>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{c.clientId.slice(0, 8)}…</td>
+                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{(c.clientId ?? "").slice(0, 8)}…</td>
                       <td className="px-4 py-3">
                         <Badge variant={STATUS_VARIANT[c.status]}>{STATUS_LABELS[c.status]}</Badge>
                       </td>

@@ -70,23 +70,25 @@ const Settings = () => {
     }
   };
 
+  // Обновляем UI при перетаскивании (без запроса)
   const handleRateChange = (value: number[]) => {
-    const rate = value[0];
-    setCommissionRate(rate);
+    setCommissionRate(value[0]);
+  };
 
+  // Отправляем запрос только при отпускании слайдера
+  const handleRateCommit = async (value: number[]) => {
+    const rate = value[0];
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      setSavingRate(true);
-      try {
-        const result = await updateSettings({ commissionRate: rate });
-        setCommissionRate(result.commissionRate);
-        toast.success(t("settings.toastRateSaved"));
-      } catch {
-        toast.error(t("settings.toastError"));
-      } finally {
-        setSavingRate(false);
-      }
-    }, 500);
+    setSavingRate(true);
+    try {
+      const result = await updateSettings({ commissionRate: rate });
+      setCommissionRate(result.commissionRate);
+      toast.success(t("settings.toastRateSaved"));
+    } catch {
+      toast.error(t("settings.toastError"));
+    } finally {
+      setSavingRate(false);
+    }
   };
 
   return (
@@ -170,6 +172,7 @@ const Settings = () => {
                 step={1}
                 value={[commissionRate]}
                 onValueChange={handleRateChange}
+                onValueCommit={handleRateCommit}
                 disabled={!isPaidMode || savingRate}
                 className="w-full"
               />
