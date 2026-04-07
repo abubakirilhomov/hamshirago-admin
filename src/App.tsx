@@ -23,6 +23,7 @@ import PromoCodes from "./pages/PromoCodes";
 import SubscriptionTiers from "./pages/SubscriptionTiers";
 import Doctors from "./pages/Doctors";
 import AuditLog from "./pages/AuditLog";
+import AiChat from "./pages/AiChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/subscription-tiers" element={<AdminLayout><SubscriptionTiers /></AdminLayout>} />
             <Route path="/doctors" element={<AdminLayout><Doctors /></AdminLayout>} />
             <Route path="/audit-log" element={<AdminLayout><AuditLog /></AdminLayout>} />
+            <Route path="/ai-chat" element={<AdminLayout><AiChat /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -507,3 +507,18 @@ export const getAuditLog = (page = 1, limit = 20, action?: string) => {
   if (action) params.set("action", action);
   return request<AuditLogResponse>("GET", `/admin/audit-log?${params}`);
 };
+
+// ── AI Analytics ─────────────────────────────────────────────────────────────
+
+export async function aiChat(messages: { role: string; content: string }[]): Promise<string> {
+  const res = await request<{ reply: string }>("POST", "/analytics/ai-chat", { messages });
+  return res.reply;
+}
+
+export async function getFeedbackSummary(): Promise<{ summary: string; stats: Record<string, number> }> {
+  return request("GET", "/analytics/feedback-summary");
+}
+
+export async function getTopIssues(): Promise<{ issues: string }> {
+  return request("GET", "/analytics/top-issues");
+}

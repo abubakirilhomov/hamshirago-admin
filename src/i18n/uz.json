@@ -8,7 +8,8 @@
     "services": "Xizmatlar",
     "reports": "Hisobotlar",
     "settings": "Sozlamalar",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "aiChat": "AI Yordamchi"
   },
   "login": {
     "title": "Administrator paneli",
@@ -281,6 +282,19 @@
     "commissionRateValue": "Buyurtma narxining {{rate}}%i",
     "commissionRateHint": "Faqat pullik rejimda mavjud",
     "toastRateSaved": "Komissiya yangilandi"
+  },
+  "aiChat": {
+    "title": "AI Yordamchi",
+    "subtitle": "Loyiha holati haqida savol bering yoki muammolar xulosasini ko'ring",
+    "chatTab": "Chat",
+    "summaryTab": "Muammolar xulosasi",
+    "placeholder": "Savol yozing...",
+    "emptyChat": "Suhbatni boshlang -- buyurtmalar, hamshiralar, moliya haqida so'rang...",
+    "thinking": "O'ylayapman...",
+    "feedbackSummary": "Fikr-mulohazalar xulosasi",
+    "topIssues": "Asosiy muammolar",
+    "retry": "Qayta urinish",
+    "loadError": "Xulosani yuklashda xatolik"
   },
   "language": { "title": "Язык / Til" },
   "common": {
