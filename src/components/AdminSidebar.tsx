@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Bot,
   Mic,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +56,7 @@ const navItems = [
   { title: "NPS", url: "/nps", icon: ThumbsUp },
   { title: "Промо-коды", url: "/promo-codes", icon: Ticket },
   { title: "Подписки", url: "/subscription-tiers", icon: CreditCard },
+  { title: "Salomat Аудит", url: "/salomat-audit", icon: Shield },
   { title: "Аудит-лог", url: "/audit-log", icon: ShieldCheck },
   { title: "Настройки", url: "/settings", icon: Settings },
 ];

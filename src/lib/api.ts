@@ -593,6 +593,21 @@ export const getVoiceSessions = (page = 1, limit = 20, status?: string, recommen
 export const getVoiceSession = (id: string) =>
   request<VoiceSession>("GET", `/voice-agent/admin/sessions/${id}`);
 
+// ── Salomat Audit ─────────────────────────────────────────────────────────────
+
+export interface SalomatAuditStats {
+  totalEvents: number;
+  redFlags: number;
+  doctorReferrals: number;
+  nurseReferrals: number;
+  safeguards: number;
+  rateLimits: number;
+  topSpecializations: Array<{ specialization: string; count: number }>;
+}
+
+export const getSalomatAuditStats = (days = 30) =>
+  request<SalomatAuditStats>("GET", `/consultations/admin/salomat-audit/stats?days=${days}`);
+
 // ── AI Analytics ─────────────────────────────────────────────────────────────
 
 export async function aiChat(messages: { role: string; content: string }[]): Promise<string> {

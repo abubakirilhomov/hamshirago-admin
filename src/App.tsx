@@ -26,6 +26,7 @@ import AuditLog from "./pages/AuditLog";
 import AiChat from "./pages/AiChat";
 import VoiceAgent from "./pages/VoiceAgent";
 import DoctorAccounts from "./pages/DoctorAccounts";
+import SalomatAudit from "./pages/SalomatAudit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/ai-chat" element={<AdminLayout><AiChat /></AdminLayout>} />
             <Route path="/voice-agent" element={<AdminLayout><VoiceAgent /></AdminLayout>} />
             <Route path="/doctor-accounts" element={<AdminLayout><DoctorAccounts /></AdminLayout>} />
+            <Route path="/salomat-audit" element={<AdminLayout><SalomatAudit /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
