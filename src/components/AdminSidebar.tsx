@@ -17,6 +17,7 @@ import {
   CreditCard,
   ShieldCheck,
   Bot,
+  Mic,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -45,10 +46,12 @@ const navItems = [
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
   { title: "Аналитика", url: "/analytics", icon: PieChart },
   { title: "AI Ассистент", url: "/ai-chat", icon: Bot },
+  { title: "Голосовой агент", url: "/voice-agent", icon: Mic },
   { title: "User Support", url: "/user-support", icon: HeartPulse },
   { title: "Отзывы", url: "/reviews", icon: Star },
   { title: "Консультации", url: "/consultations", icon: MessageSquare },
   { title: "Врачи", url: "/doctors", icon: Stethoscope },
+  { title: "Аккаунты врачей", url: "/doctor-accounts", icon: UserCheck },
   { title: "NPS", url: "/nps", icon: ThumbsUp },
   { title: "Промо-коды", url: "/promo-codes", icon: Ticket },
   { title: "Подписки", url: "/subscription-tiers", icon: CreditCard },

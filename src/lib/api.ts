@@ -482,6 +482,47 @@ export const createDoctor = (data: DoctorFormData) =>
 export const updateDoctor = (id: string, data: Partial<DoctorFormData>) =>
   request<AdminDoctor>("PATCH", `/consultations/admin/doctors/${id}`, data);
 
+// ── Doctor Accounts (V5 auth doctors) ────────────────────────────────────────
+
+export interface DoctorAccount {
+  id: string;
+  name: string;
+  phone: string;
+  specialization: string | null;
+  experienceYears: number;
+  isOnline: boolean;
+  isBlocked: boolean;
+  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  profilePhotoUrl: string | null;
+  rating: number | null;
+  reviewCount: number;
+  createdAt: string;
+}
+
+export interface DoctorAccountsResponse {
+  data: DoctorAccount[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export const getDoctorAccounts = (page = 1, limit = 20, search?: string, verificationStatus?: string, isBlocked?: boolean) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (search) params.set("search", search);
+  if (verificationStatus) params.set("verificationStatus", verificationStatus);
+  if (isBlocked !== undefined) params.set("isBlocked", String(isBlocked));
+  return request<DoctorAccountsResponse>("GET", `/doctors/admin/all?${params}`);
+};
+
+export const getDoctorAccountsPending = () =>
+  request<DoctorAccount[]>("GET", "/doctors/admin/pending");
+
+export const verifyDoctorAccount = (id: string, status: "APPROVED" | "REJECTED", reason?: string) =>
+  request<DoctorAccount>("PATCH", `/doctors/admin/${id}/verify`, { status, ...(reason ? { reason } : {}) });
+
+export const blockDoctorAccount = (id: string, isBlocked: boolean) =>
+  request<void>("PATCH", `/doctors/admin/${id}/block`, { isBlocked });
+
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 
 export interface AuditLogEntry {
@@ -507,6 +548,50 @@ export const getAuditLog = (page = 1, limit = 20, action?: string) => {
   if (action) params.set("action", action);
   return request<AuditLogResponse>("GET", `/admin/audit-log?${params}`);
 };
+
+// ── Voice Agent ───────────────────────────────────────────────────────────────
+
+export interface VoiceAgentStats {
+  totalSessions: number;
+  activeSessions: number;
+  completedSessions: number;
+  doctorRecommendations: number;
+  nurseRecommendations: number;
+  conversionRate: number;
+  averageExchanges: number;
+}
+
+export interface VoiceSession {
+  id: string;
+  clientId: string;
+  lang: string;
+  status: "ACTIVE" | "COMPLETED";
+  recommendation: "DOCTOR" | "NURSE" | "NONE" | null;
+  suggestedSpecialization: string | null;
+  messages: { role: string; content: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VoiceSessionsResponse {
+  data: VoiceSession[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export const getVoiceAgentStats = () =>
+  request<VoiceAgentStats>("GET", "/voice-agent/admin/sessions/stats");
+
+export const getVoiceSessions = (page = 1, limit = 20, status?: string, recommendation?: string) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) params.set("status", status);
+  if (recommendation) params.set("recommendation", recommendation);
+  return request<VoiceSessionsResponse>("GET", `/voice-agent/admin/sessions?${params}`);
+};
+
+export const getVoiceSession = (id: string) =>
+  request<VoiceSession>("GET", `/voice-agent/admin/sessions/${id}`);
 
 // ── AI Analytics ─────────────────────────────────────────────────────────────
 
