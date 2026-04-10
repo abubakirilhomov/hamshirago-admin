@@ -622,3 +622,124 @@ export async function getFeedbackSummary(): Promise<{ summary: string; stats: Re
 export async function getTopIssues(): Promise<{ issues: string }> {
   return request("GET", "/analytics/top-issues");
 }
+
+// ── Clinic Companies ──────────────────────────────────────────────────────────
+
+export interface Company {
+  id: string;
+  name: string;
+  legalName: string | null;
+  phone: string;
+  address: string | null;
+  city: string | null;
+  licenseNumber: string | null;
+  licenseExpiry: string | null;
+  isVerified: boolean;
+  isActive: boolean;
+  pilotEnded: boolean;
+  createdAt: string;
+  _count?: { staff: number; salomatLeads: number };
+}
+
+export interface CompaniesResponse {
+  data: Company[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface CreateCompanyDto {
+  name: string;
+  legalName?: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  ceoName: string;
+  ceoPhone: string;
+  ceoPassword: string;
+}
+
+export const getCompanies = (
+  page = 1,
+  limit = 20,
+  city?: string,
+  isVerified?: boolean,
+  isActive?: boolean,
+) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (city) params.set("city", city);
+  if (isVerified !== undefined) params.set("isVerified", String(isVerified));
+  if (isActive !== undefined) params.set("isActive", String(isActive));
+  return request<CompaniesResponse>("GET", `/admin/companies?${params}`);
+};
+
+export const createCompany = (dto: CreateCompanyDto) =>
+  request<Company>("POST", "/admin/companies", dto);
+
+export const verifyCompany = (id: string, isVerified: boolean) =>
+  request<Company>("PATCH", `/admin/companies/${id}/verify`, { isVerified });
+
+export const blockCompany = (id: string, isActive: boolean) =>
+  request<Company>("PATCH", `/admin/companies/${id}/block`, { isActive });
+
+export const getCompany = (id: string) =>
+  request<Company>("GET", `/admin/companies/${id}`);
+
+export interface CompanyStaffMember {
+  id: string;
+  name: string;
+  phone: string;
+  role: "CEO" | "RECEPTION" | "DOCTOR";
+  isActive: boolean;
+  createdAt: string;
+}
+
+export const getCompanyStaff = (id: string) =>
+  request<CompanyStaffMember[]>("GET", `/admin/companies/${id}/staff`);
+
+export const getCompanyMonthlyStats = (id: string) =>
+  request<Array<{ month: string; patientCount: number }>>("GET", `/admin/companies/${id}/stats/monthly`);
+
+export interface AdminLead {
+  id: string;
+  clinicId: string;
+  patientName: string;
+  patientPhone: string;
+  specialization: string | null;
+  aiSummary: string | null;
+  status: "NEW" | "CONTACTED" | "BOOKED" | "VISITED" | "MISSED";
+  commissionAmount: number | null;
+  createdAt: string;
+  clinic?: { id: string; name: string };
+}
+
+export interface AdminLeadsResponse {
+  data: AdminLead[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface LeadsOverview {
+  totalLeads: number;
+  byStatus: Array<{ status: string; count: number }>;
+  conversionRate: number;
+  totalCommission: number;
+}
+
+export const getLeadsOverview = () =>
+  request<LeadsOverview>("GET", "/admin/leads/overview");
+
+export const getAdminLeads = (
+  page = 1,
+  limit = 20,
+  clinicId?: string,
+  status?: string,
+) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (clinicId) params.set("clinicId", clinicId);
+  if (status) params.set("status", status);
+  return request<AdminLeadsResponse>("GET", `/admin/leads?${params}`);
+};
