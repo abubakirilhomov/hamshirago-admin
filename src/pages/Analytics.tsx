@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getOrders, getAllMedics, type AdminOrder, type AdminMedic } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Line,
   ComposedChart,
@@ -12,6 +10,7 @@ import {
   XAxis,
   YAxis,
   Legend,
+  Bar,
 } from "recharts";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -49,10 +48,12 @@ const Analytics = () => {
   const [allOrders, setAllOrders] = useState<AdminOrder[]>([]);
   const [medicsMap, setMedicsMap] = useState<Map<string, AdminMedic>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [period, setPeriod] = useState<30 | 90>(30);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       // Загружаем заказы только за 90 дней (максимальный период)
       // Останавливаемся как только встречаем заказы старше cutoff (сортировка DESC)
@@ -62,10 +63,10 @@ const Analytics = () => {
       let pg = 1;
       while (true) {
         const res = await getOrders(pg, 100);
-        if (res.data.length === 0) break;
+        if (!res?.data || res.data.length === 0) break;
         collected.push(...res.data);
         const last = res.data[res.data.length - 1];
-        if (!last || new Date(last.created_at) < cutoff90 || pg >= res.totalPages) break;
+        if (!last || !last.created_at || new Date(String(last.created_at)) < cutoff90 || pg >= (res.totalPages ?? 1)) break;
         pg++;
       }
       setAllOrders(collected);
@@ -73,10 +74,11 @@ const Analytics = () => {
       // Медики: только первые 100 для lookup имён (достаточно для топ-10)
       const mFirst = await getAllMedics(1, 100);
       const map = new Map<string, AdminMedic>();
-      mFirst.data.forEach((m) => map.set(m.id, m));
+      mFirst?.data?.forEach((m) => map.set(m.id, m));
       setMedicsMap(map);
     } catch (e) {
       console.error("Analytics load error:", e);
+      setLoadError(e instanceof Error ? e.message : "Ошибка загрузки данных");
     } finally {
       setLoading(false);
     }
@@ -84,63 +86,81 @@ const Analytics = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // ── Filter by period ───────────────────────────────────────────────────────
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - period);
-  const cutoffStr = toDateStr(cutoff);
+  // ── Computed analytics (null-safe) ────────────────────────────────────────
+  const computed = useMemo(() => {
+    try {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - period);
+      const cutoffStr = toDateStr(cutoff);
 
-  const periodOrders = allOrders.filter(
-    (o) => o.created_at && o.created_at >= cutoffStr
-  );
-  const doneOrders = periodOrders.filter((o) => o.status === "DONE");
-  const canceledOrders = periodOrders.filter((o) => o.status === "CANCELED");
+      const periodOrders = allOrders.filter(
+        (o) => o.created_at && String(o.created_at) >= cutoffStr
+      );
+      const doneOrders = periodOrders.filter((o) => o.status === "DONE");
+      const canceledOrders = periodOrders.filter((o) => o.status === "CANCELED");
 
-  // ── KPIs ───────────────────────────────────────────────────────────────────
-  const avgOrderValue = doneOrders.length
-    ? Math.round(doneOrders.reduce((s, o) => s + o.priceAmount, 0) / doneOrders.length)
-    : 0;
-  const conversionRate = periodOrders.length
-    ? Math.round((doneOrders.length / periodOrders.length) * 100)
-    : 0;
-  const avgTime = avgMinutes(doneOrders);
-  const platformRevenue = doneOrders.reduce((s, o) => s + (o.platformFee || 0), 0);
+      const price = (o: AdminOrder) => Number(o.priceAmount) || 0;
+      const fee = (o: AdminOrder) => Number(o.platformFee) || 0;
 
-  // ── Weekly chart ───────────────────────────────────────────────────────────
-  const weekMap = new Map<string, { orders: number; revenue: number }>();
-  periodOrders.forEach((o) => {
-    const w = getISOWeek(new Date(o.created_at));
-    const prev = weekMap.get(w) ?? { orders: 0, revenue: 0 };
-    weekMap.set(w, {
-      orders: prev.orders + 1,
-      revenue: prev.revenue + (o.status === "DONE" ? o.platformFee || 0 : 0),
-    });
-  });
-  const weeklyChart = Array.from(weekMap.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([week, v]) => ({ week, ...v }));
+      // KPIs
+      const avgOrderValue = doneOrders.length
+        ? Math.round(doneOrders.reduce((s, o) => s + price(o), 0) / doneOrders.length)
+        : 0;
+      const conversionRate = periodOrders.length
+        ? Math.round((doneOrders.length / periodOrders.length) * 100)
+        : 0;
+      const avgTime = avgMinutes(doneOrders);
+      const platformRevenue = doneOrders.reduce((s, o) => s + fee(o), 0);
 
-  // ── Top medics ────────────────────────────────────────────────────────────
-  const medicStats = new Map<string, { orders: number; gross: number }>();
-  doneOrders.forEach((o) => {
-    if (!o.medicId) return;
-    const prev = medicStats.get(o.medicId) ?? { orders: 0, gross: 0 };
-    medicStats.set(o.medicId, { orders: prev.orders + 1, gross: prev.gross + o.priceAmount });
-  });
-  const topMedics = Array.from(medicStats.entries())
-    .map(([id, v]) => ({ id, ...v, medic: medicsMap.get(id) }))
-    .sort((a, b) => b.orders - a.orders)
-    .slice(0, 10);
+      // Weekly chart
+      const weekMap = new Map<string, { orders: number; revenue: number }>();
+      periodOrders.forEach((o) => {
+        if (!o.created_at) return;
+        const w = getISOWeek(new Date(String(o.created_at)));
+        const prev = weekMap.get(w) ?? { orders: 0, revenue: 0 };
+        weekMap.set(w, {
+          orders: prev.orders + 1,
+          revenue: prev.revenue + (o.status === "DONE" ? fee(o) : 0),
+        });
+      });
+      const weeklyChart = Array.from(weekMap.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([week, v]) => ({ week, orders: v.orders, revenue: v.revenue }));
 
-  // ── Top services ──────────────────────────────────────────────────────────
-  const serviceStats = new Map<string, { orders: number; gross: number }>();
-  doneOrders.forEach((o) => {
-    const prev = serviceStats.get(o.serviceTitle) ?? { orders: 0, gross: 0 };
-    serviceStats.set(o.serviceTitle, { orders: prev.orders + 1, gross: prev.gross + o.priceAmount });
-  });
-  const topServices = Array.from(serviceStats.entries())
-    .map(([title, v]) => ({ title, ...v }))
-    .sort((a, b) => b.orders - a.orders)
-    .slice(0, 8);
+      // Top medics
+      const medicStats = new Map<string, { orders: number; gross: number }>();
+      doneOrders.forEach((o) => {
+        if (!o.medicId) return;
+        const prev = medicStats.get(o.medicId) ?? { orders: 0, gross: 0 };
+        medicStats.set(o.medicId, { orders: prev.orders + 1, gross: prev.gross + price(o) });
+      });
+      const topMedics = Array.from(medicStats.entries())
+        .map(([id, v]) => ({ id, ...v, medic: medicsMap.get(id) }))
+        .sort((a, b) => b.orders - a.orders)
+        .slice(0, 10);
+
+      // Top services
+      const serviceStats = new Map<string, { orders: number; gross: number }>();
+      doneOrders.forEach((o) => {
+        const title = o.serviceTitle || "Неизвестная услуга";
+        const prev = serviceStats.get(title) ?? { orders: 0, gross: 0 };
+        serviceStats.set(title, { orders: prev.orders + 1, gross: prev.gross + price(o) });
+      });
+      const topServices = Array.from(serviceStats.entries())
+        .map(([title, v]) => ({ title, ...v }))
+        .sort((a, b) => b.orders - a.orders)
+        .slice(0, 8);
+
+      return {
+        periodOrders, doneOrders, canceledOrders,
+        avgOrderValue, conversionRate, avgTime, platformRevenue,
+        weeklyChart, topMedics, topServices,
+      };
+    } catch (e) {
+      console.error("Analytics compute error:", e);
+      return null;
+    }
+  }, [allOrders, medicsMap, period]);
 
   const fmt = (n: number) => `${n.toLocaleString("ru-RU")} UZS`;
 
@@ -163,6 +183,29 @@ const Analytics = () => {
       </div>
     );
   }
+
+  if (loadError || !computed) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Аналитика</h1>
+        <div className="rounded-2xl border bg-card p-8 text-center">
+          <p className="text-sm text-destructive mb-4">{loadError ?? "Ошибка вычисления данных"}</p>
+          <button
+            onClick={() => loadData()}
+            className="rounded-lg px-4 py-2 text-sm font-medium bg-primary text-white"
+          >
+            Повторить
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    periodOrders, doneOrders, canceledOrders,
+    avgOrderValue, conversionRate, avgTime, platformRevenue,
+    weeklyChart, topMedics, topServices,
+  } = computed;
 
   return (
     <div className="space-y-6">
