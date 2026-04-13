@@ -311,7 +311,7 @@ const Analytics = () => {
                       <td className="px-5 py-2.5 text-muted-foreground font-bold">{idx + 1}</td>
                       <td className="px-3 py-2.5">
                         <p className="font-medium">{medic?.name ?? "—"}</p>
-                        <p className="text-xs text-muted-foreground">⭐ {medic?.rating?.toFixed(1) ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">⭐ {medic?.rating != null ? Number(medic.rating).toFixed(1) : "—"}</p>
                       </td>
                       <td className="px-3 py-2.5 text-right font-semibold text-emerald-600">{orders}</td>
                       <td className="px-5 py-2.5 text-right text-xs text-muted-foreground">{gross.toLocaleString("ru-RU")}</td>

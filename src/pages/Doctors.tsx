@@ -134,7 +134,7 @@ export default function Doctors() {
 
   const activeCount = doctors.filter((d) => d.isActive).length;
   const avgRating = doctors.filter((d) => d.rating).length
-    ? (doctors.reduce((s, d) => s + (d.rating ?? 0), 0) / doctors.filter((d) => d.rating).length).toFixed(1)
+    ? (doctors.reduce((s, d) => s + Number(d.rating ?? 0), 0) / doctors.filter((d) => d.rating).length).toFixed(1)
     : "—";
 
   return (
@@ -242,7 +242,7 @@ export default function Doctors() {
                     {doc.rating != null ? (
                       <span className="flex items-center gap-1">
                         <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                        {doc.rating.toFixed(1)}
+                        {Number(doc.rating).toFixed(1)}
                       </span>
                     ) : "—"}
                   </TableCell>
