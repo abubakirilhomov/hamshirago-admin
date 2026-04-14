@@ -30,7 +30,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <header className="h-14 flex items-center border-b border-white/40 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-4 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="HamshiraGo" className="rounded-md flex-shrink-0" style={{ width: 28, height: 28, objectFit: "cover" }} />
+              <img src="/icon.svg" alt="HamshiraGo" className="rounded-md flex-shrink-0" style={{ width: 28, height: 28 }} />
               <span className="text-sm font-semibold text-foreground">HamshiraGo</span>
               <span className="text-xs text-muted-foreground hidden sm:inline">— Админ</span>
             </div>
