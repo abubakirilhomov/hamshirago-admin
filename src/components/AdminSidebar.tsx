@@ -90,12 +90,12 @@ export function AdminSidebar() {
         <div className="px-4 py-5">
           {!collapsed && (
             <div className="flex items-center gap-3">
-              <img src="/icon.svg" alt="HamshiraGo" className="flex-shrink-0 rounded-lg shadow-lg" style={{ width: 36, height: 36 }} />
+              <img src="/logo.png" alt="HamshiraGo" className="flex-shrink-0 rounded-lg shadow-lg" style={{ width: 36, height: 36 }} />
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
           )}
           {collapsed && (
-            <img src="/icon.svg" alt="HamshiraGo" className="mx-auto rounded-lg shadow-lg" style={{ width: 36, height: 36 }} />
+            <img src="/logo.png" alt="HamshiraGo" className="mx-auto rounded-lg shadow-lg" style={{ width: 36, height: 36 }} />
           )}
         </div>
 
