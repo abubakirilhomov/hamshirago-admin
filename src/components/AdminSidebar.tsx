@@ -21,6 +21,7 @@ import {
   Shield,
   Building2,
   Zap,
+  Wallet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +59,7 @@ const navItems = [
   { title: "NPS", url: "/nps", icon: ThumbsUp },
   { title: "Промо-коды", url: "/promo-codes", icon: Ticket },
   { title: "Подписки", url: "/subscription-tiers", icon: CreditCard },
+  { title: "Выплаты", url: "/payouts", icon: Wallet },
   { title: "Клиники", url: "/companies", icon: Building2 },
   { title: "Salomat Лиды", url: "/salomat-leads", icon: Zap },
   { title: "Salomat Аудит", url: "/salomat-audit", icon: Shield },
@@ -88,22 +90,12 @@ export function AdminSidebar() {
         <div className="px-4 py-5">
           {!collapsed && (
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg flex-shrink-0 text-white"
-                style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-              >
-                <Stethoscope size={20} />
-              </div>
+              <img src="/logo.png" alt="HamshiraGo" className="flex-shrink-0 rounded-lg shadow-lg" style={{ width: 36, height: 36, objectFit: "cover" }} />
               <span className="font-bold text-sidebar-foreground">HamshiraGo</span>
             </div>
           )}
           {collapsed && (
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-lg mx-auto text-white"
-              style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-            >
-              <Stethoscope size={20} />
-            </div>
+            <img src="/logo.png" alt="HamshiraGo" className="mx-auto rounded-lg shadow-lg" style={{ width: 36, height: 36, objectFit: "cover" }} />
           )}
         </div>
 

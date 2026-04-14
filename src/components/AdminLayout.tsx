@@ -4,7 +4,7 @@ import { hasAdminToken as hasAdminSecret } from "@/lib/api";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { Search, Stethoscope } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -30,12 +30,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <header className="h-14 flex items-center border-b border-white/40 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-4 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center gap-2">
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-full flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)" }}
-              >
-                <Stethoscope className="h-3.5 w-3.5 text-white" />
-              </div>
+              <img src="/logo.png" alt="HamshiraGo" className="rounded-md flex-shrink-0" style={{ width: 28, height: 28, objectFit: "cover" }} />
               <span className="text-sm font-semibold text-foreground">HamshiraGo</span>
               <span className="text-xs text-muted-foreground hidden sm:inline">— Админ</span>
             </div>

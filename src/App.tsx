@@ -30,6 +30,7 @@ import SalomatAudit from "./pages/SalomatAudit";
 import Companies from "./pages/Companies";
 import CompanyDetail from "./pages/CompanyDetail";
 import SalomatLeads from "./pages/SalomatLeads";
+import Payouts from "./pages/Payouts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/companies" element={<AdminLayout><Companies /></AdminLayout>} />
             <Route path="/companies/:id" element={<AdminLayout><CompanyDetail /></AdminLayout>} />
             <Route path="/salomat-leads" element={<AdminLayout><SalomatLeads /></AdminLayout>} />
+            <Route path="/payouts" element={<AdminLayout><Payouts /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -264,6 +264,31 @@ export const getClientReviews = (clientId: string) =>
 export const topupMedic = (id: string, amount: number) =>
   request<void>("POST", `/medics/admin/${id}/topup`, { amount });
 
+// ── Withdrawal requests (BIZ-BE-2) ───────────────────────────────────────────
+
+export type WithdrawalStatus = "PENDING" | "APPROVED" | "DECLINED";
+
+export interface WithdrawalRequest {
+  id: string;
+  medicId: string;
+  medicName: string | null;
+  medicPhone: string;
+  amount: number;
+  status: WithdrawalStatus;
+  adminNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getWithdrawalRequests = (status?: WithdrawalStatus) =>
+  request<WithdrawalRequest[]>("GET", `/medics/admin/withdrawal-requests${status ? `?status=${status}` : ""}`);
+
+export const approveWithdrawal = (id: string) =>
+  request<WithdrawalRequest>("POST", `/medics/admin/withdrawal-requests/${id}/approve`);
+
+export const declineWithdrawal = (id: string, adminNote?: string) =>
+  request<WithdrawalRequest>("POST", `/medics/admin/withdrawal-requests/${id}/decline`, { adminNote });
+
 // ── App Settings ──────────────────────────────────────────────────────────────
 
 export interface AppSettings {
