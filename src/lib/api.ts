@@ -496,6 +496,8 @@ export interface DoctorFormData {
   pricePerConsultation: number;
   phone: string;
   isActive: boolean;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export const getAdminDoctors = () =>
@@ -684,6 +686,8 @@ export interface CreateCompanyDto {
   ceoName: string;
   ceoPhone: string;
   ceoPassword: string;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export const getCompanies = (

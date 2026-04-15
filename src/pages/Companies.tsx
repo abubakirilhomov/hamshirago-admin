@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { Building2, Plus, CheckCircle, XCircle, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import MapPicker from "@/components/MapPicker";
 
 const EMPTY_FORM: CreateCompanyDto = {
   name: "",
@@ -43,6 +44,8 @@ const EMPTY_FORM: CreateCompanyDto = {
   ceoName: "",
   ceoPhone: "",
   ceoPassword: "",
+  lat: null,
+  lng: null,
 };
 
 export default function Companies() {
@@ -305,6 +308,15 @@ export default function Companies() {
                 <Label>Срок лицензии</Label>
                 <Input type="date" value={form.licenseExpiry} onChange={(e) => setForm(f => ({ ...f, licenseExpiry: e.target.value }))} />
               </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <MapPicker
+                lat={form.lat ?? null}
+                lng={form.lng ?? null}
+                onChange={(lat, lng) => setForm(f => ({ ...f, lat, lng }))}
+                label="Местоположение клиники"
+              />
             </div>
 
             <div className="border-t pt-4">

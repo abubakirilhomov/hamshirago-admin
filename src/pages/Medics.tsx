@@ -18,6 +18,18 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { ShieldAlert, Star, Users, UserCheck, Wifi, Wallet, Map, List } from "lucide-react";
+
+const AVATAR_COLORS = ["#0d9488","#0284c7","#7c3aed","#d97706","#dc2626","#059669","#db2777","#9333ea"];
+function hashColor(name: string | null): string {
+  if (!name) return "#6b7280";
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function nameInitial(name: string | null, phone: string): string {
+  if (name?.trim()) return name.trim()[0].toUpperCase();
+  return phone.slice(-1);
+}
 import { motion } from "framer-motion";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
@@ -242,7 +254,19 @@ const Medics = () => {
                 ) : (
                   filteredMedics.map((m) => (
                     <TableRow key={m.id} className="hover:bg-white/70 dark:hover:bg-slate-900/60">
-                      <TableCell className="font-medium">{m.name}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {m.facePhotoUrl ? (
+                            <img src={m.facePhotoUrl} alt={m.name ?? ""} className="h-8 w-8 rounded-full object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold"
+                              style={{ background: hashColor(m.name) }}>
+                              {nameInitial(m.name, m.phone)}
+                            </div>
+                          )}
+                          <span className="font-medium">{m.name ?? "—"}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="font-mono text-sm">{m.phone}</TableCell>
                       <TableCell><StatusBadge status={m.verificationStatus} /></TableCell>
                       <TableCell>

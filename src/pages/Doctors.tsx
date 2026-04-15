@@ -29,6 +29,14 @@ import {
 import { toast } from "sonner";
 import { Pencil, Plus, Star, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
+import MapPicker from "@/components/MapPicker";
+
+const AVATAR_COLORS = ["#0d9488","#0284c7","#7c3aed","#d97706","#dc2626","#059669","#db2777","#9333ea"];
+function hashColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
 
 const EMPTY_FORM: DoctorFormData = {
   name: "",
@@ -40,6 +48,8 @@ const EMPTY_FORM: DoctorFormData = {
   pricePerConsultation: 50000,
   phone: "",
   isActive: true,
+  lat: null,
+  lng: null,
 };
 
 export default function Doctors() {
@@ -221,10 +231,11 @@ export default function Doctors() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {doc.photoUrl ? (
-                        <img src={doc.photoUrl} alt={doc.name} className="h-8 w-8 rounded-full object-cover" />
+                        <img src={doc.photoUrl} alt={doc.name} className="h-8 w-8 rounded-full object-cover flex-shrink-0" />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                          <Stethoscope className="h-4 w-4 text-teal-600" />
+                        <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold"
+                          style={{ background: hashColor(doc.name) }}>
+                          {doc.name.trim()[0]?.toUpperCase() ?? <Stethoscope className="h-4 w-4" />}
                         </div>
                       )}
                       <div>
@@ -316,6 +327,12 @@ export default function Doctors() {
               <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
               <Label>Активен</Label>
             </div>
+            <MapPicker
+              lat={form.lat ?? null}
+              lng={form.lng ?? null}
+              onChange={(lat, lng) => setForm({ ...form, lat, lng })}
+              label="Местоположение кабинета/клиники"
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Отмена</Button>
