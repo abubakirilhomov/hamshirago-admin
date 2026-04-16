@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,6 +33,13 @@ export default function MapPicker({ lat, lng, onChange, label }: Props) {
   const DEFAULT_CENTER: [number, number] = [41.2995, 69.2401]; // Ташкент
   const center: [number, number] = lat && lng ? [lat, lng] : DEFAULT_CENTER;
 
+  // Delay map render until container has final dimensions (dialog animation)
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setReady(true), 80);
+    return () => clearTimeout(id);
+  }, []);
+
   function getLocation() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -46,14 +53,20 @@ export default function MapPicker({ lat, lng, onChange, label }: Props) {
       {label && <p className="text-sm font-medium text-foreground">{label}</p>}
 
       <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: 240 }}>
-        <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          />
-          <ClickHandler onChange={onChange} />
-          {lat && lng && <Marker position={[lat, lng]} />}
-        </MapContainer>
+        {ready ? (
+          <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+            <ClickHandler onChange={onChange} />
+            {lat && lng && <Marker position={[lat, lng]} />}
+          </MapContainer>
+        ) : (
+          <div style={{ height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 13, color: "#94a3b8" }}>Загрузка карты...</span>
+          </div>
+        )}
 
         {/* Geolocation button */}
         <button
