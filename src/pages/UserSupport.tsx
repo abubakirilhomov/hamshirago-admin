@@ -40,7 +40,8 @@ export default function UserSupport() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [search, setSearch] = useState("");
+  const [inputValue, setInputValue] = useState(""); // контролирует поле ввода мгновенно
+  const [search, setSearch] = useState("");          // debounced — триггерит API
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selected, setSelected] = useState<ClientError | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -51,8 +52,7 @@ export default function UserSupport() {
 
   useEffect(() => {
     loadErrors();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, statusFilter]);
+  }, [page, statusFilter, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadStats() {
     try {
@@ -61,9 +61,9 @@ export default function UserSupport() {
     } catch { /* ignore */ }
   }
 
-  async function loadErrors(activeSearch?: string) {
+  async function loadErrors() {
     setLoading(true);
-    const q = activeSearch ?? search;
+    const q = search;
     try {
       if (q.trim()) {
         // При поиске грузим до 500 ошибок (5 страниц × 100) для полного охвата
@@ -152,12 +152,12 @@ async function handleStatusChange(id: string, status: string) {
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
           placeholder="Поиск по ошибке, коду, userId..."
-          value={search}
+          value={inputValue}
           onChange={(e) => {
             const val = e.target.value;
-            setSearch(val);
+            setInputValue(val);
             if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-            searchDebounceRef.current = setTimeout(() => loadErrors(val), 400);
+            searchDebounceRef.current = setTimeout(() => { setSearch(val); setPage(1); }, 400);
           }}
           className="sm:max-w-xs"
         />
