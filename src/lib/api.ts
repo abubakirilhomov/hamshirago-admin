@@ -85,37 +85,26 @@ export interface ServiceFormData {
   sortOrder: number;
 }
 
-// ── Token storage ─────────────────────────────────────────────────────────────
+// ── Auth session marker (token stored in httpOnly cookie, not accessible client-side) ──
 
-function getAdminToken(): string {
-  return localStorage.getItem("admin_token") ?? "";
-}
-
-export function setAdminToken(token: string) {
-  localStorage.setItem("admin_token", token);
+export function setAdminToken(_token: string) {
+  localStorage.setItem("admin_logged_in", "1");
 }
 
 export function clearAdminToken() {
-  localStorage.removeItem("admin_token");
+  localStorage.removeItem("admin_logged_in");
 }
 
 export function hasAdminToken(): boolean {
-  const token = localStorage.getItem("admin_token");
-  if (!token) return false;
-  try {
-    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(token.split(".")[1].length / 4) * 4, "=");
-    const payload = JSON.parse(atob(b64)) as { exp?: number };
-    return typeof payload.exp === "number" && payload.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
+  return localStorage.getItem("admin_logged_in") === "1";
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 
 export async function adminLogin(username: string, password: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/auth/admin/login`, {
+  const res = await fetch(`${API_BASE}/auth/admin/login/cookie`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
@@ -123,8 +112,7 @@ export async function adminLogin(username: string, password: string): Promise<vo
   if (res.status === 401) throw new Error("Неверный логин или пароль");
   if (!res.ok) throw new Error("Ошибка сервера. Попробуйте позже.");
 
-  const data = await res.json() as { access_token: string };
-  setAdminToken(data.access_token);
+  localStorage.setItem("admin_logged_in", "1");
 }
 
 // ── Request helper ────────────────────────────────────────────────────────────
@@ -133,18 +121,11 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  requiresAuth = true
 ): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (requiresAuth) {
-    headers["Authorization"] = `Bearer ${getAdminToken()}`;
-  }
-
   const res = await fetch(`${API_BASE}${path}`, {
     method,
-    headers,
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
@@ -231,7 +212,7 @@ export const cancelOrder = (id: string) =>
 // ── Services ──────────────────────────────────────────────────────────────────
 
 export const getServices = () =>
-  request<AdminService[]>("GET", "/services", undefined, false);
+  request<AdminService[]>("GET", "/services");
 
 export const createService = (data: ServiceFormData) =>
   request<AdminService>("POST", "/services", data);
