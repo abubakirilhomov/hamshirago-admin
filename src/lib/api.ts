@@ -87,6 +87,21 @@ export interface ServiceFormData {
 
 // ── Auth session marker (token stored in httpOnly cookie, not accessible client-side) ──
 
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefresh(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = fetch(`${API_BASE}/auth/refresh-token`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((r) => r.ok)
+    .catch(() => false)
+    .finally(() => { refreshPromise = null; });
+  return refreshPromise;
+}
+
 export function setAdminToken(_token: string) {
   localStorage.setItem("admin_logged_in", "1");
 }
@@ -130,6 +145,19 @@ async function request<T>(
   });
 
   if (res.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      const retry = await fetch(`${API_BASE}${path}`, {
+        method,
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+      if (retry.ok) {
+        if (retry.status === 204) return null as T;
+        return retry.json() as Promise<T>;
+      }
+    }
     clearAdminToken();
     window.dispatchEvent(new CustomEvent("admin:unauthorized"));
     throw new Error("Unauthorized");
