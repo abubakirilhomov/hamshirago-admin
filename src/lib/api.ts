@@ -85,41 +85,29 @@ export interface ServiceFormData {
   sortOrder: number;
 }
 
-// ── Auth session marker (token stored in httpOnly cookie, not accessible client-side) ──
+// ── Auth — Bearer token stored in localStorage ────────────────────────────────
 
-let refreshPromise: Promise<boolean> | null = null;
-
-async function tryRefresh(): Promise<boolean> {
-  if (refreshPromise) return refreshPromise;
-  refreshPromise = fetch(`${API_BASE}/auth/refresh-token`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((r) => r.ok)
-    .catch(() => false)
-    .finally(() => { refreshPromise = null; });
-  return refreshPromise;
-}
-
-export function setAdminToken(_token: string) {
-  localStorage.setItem("admin_logged_in", "1");
+export function setAdminToken(token: string) {
+  localStorage.setItem("admin_token", token);
 }
 
 export function clearAdminToken() {
-  localStorage.removeItem("admin_logged_in");
+  localStorage.removeItem("admin_token");
 }
 
 export function hasAdminToken(): boolean {
-  return localStorage.getItem("admin_logged_in") === "1";
+  return !!localStorage.getItem("admin_token");
+}
+
+export function getAdminToken(): string | null {
+  return localStorage.getItem("admin_token");
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 
 export async function adminLogin(username: string, password: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/auth/admin/login/cookie`, {
+  const res = await fetch(`${API_BASE}/auth/admin/login`, {
     method: "POST",
-    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
@@ -127,7 +115,8 @@ export async function adminLogin(username: string, password: string): Promise<vo
   if (res.status === 401) throw new Error("Неверный логин или пароль");
   if (!res.ok) throw new Error("Ошибка сервера. Попробуйте позже.");
 
-  localStorage.setItem("admin_logged_in", "1");
+  const data = await res.json() as { access_token: string };
+  setAdminToken(data.access_token);
 }
 
 // ── Request helper ────────────────────────────────────────────────────────────
@@ -137,27 +126,18 @@ async function request<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
+  const token = getAdminToken();
   const res = await fetch(`${API_BASE}${path}`, {
     method,
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   if (res.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      const retry = await fetch(`${API_BASE}${path}`, {
-        method,
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-      });
-      if (retry.ok) {
-        if (retry.status === 204) return null as T;
-        return retry.json() as Promise<T>;
-      }
-    }
+    // Admin uses a 12h access cookie with no refresh token — skip refresh attempt
     clearAdminToken();
     window.dispatchEvent(new CustomEvent("admin:unauthorized"));
     throw new Error("Unauthorized");
@@ -695,8 +675,6 @@ export interface CreateCompanyDto {
   ceoName: string;
   ceoPhone: string;
   ceoPassword: string;
-  lat?: number | null;
-  lng?: number | null;
 }
 
 export const getCompanies = (

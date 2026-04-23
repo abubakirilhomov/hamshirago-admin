@@ -44,8 +44,6 @@ const EMPTY_FORM: CreateCompanyDto = {
   ceoName: "",
   ceoPhone: "",
   ceoPassword: "",
-  lat: null,
-  lng: null,
 };
 
 export default function Companies() {
@@ -58,6 +56,7 @@ export default function Companies() {
   const [verifiedFilter, setVerifiedFilter] = useState<"" | "true" | "false">("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<CreateCompanyDto>(EMPTY_FORM);
+  const [mapCoords, setMapCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -312,9 +311,9 @@ export default function Companies() {
 
             <div className="border-t pt-4">
               <MapPicker
-                lat={form.lat ?? null}
-                lng={form.lng ?? null}
-                onChange={(lat, lng) => setForm(f => ({ ...f, lat, lng }))}
+                lat={mapCoords.lat}
+                lng={mapCoords.lng}
+                onChange={(lat, lng) => setMapCoords({ lat, lng })}
                 label="Местоположение клиники"
               />
             </div>
