@@ -597,17 +597,17 @@ export interface VoiceSessionsResponse {
 }
 
 export const getVoiceAgentStats = () =>
-  request<VoiceAgentStats>("GET", "/voice-agent/admin/sessions/stats");
+  request<VoiceAgentStats>("GET", "/consultations/admin/ai-chat/sessions/stats");
 
 export const getVoiceSessions = (page = 1, limit = 20, status?: string, recommendation?: string) => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (status) params.set("status", status);
   if (recommendation) params.set("recommendation", recommendation);
-  return request<VoiceSessionsResponse>("GET", `/voice-agent/admin/sessions?${params}`);
+  return request<VoiceSessionsResponse>("GET", `/consultations/admin/ai-chat/sessions?${params}`);
 };
 
 export const getVoiceSession = (id: string) =>
-  request<VoiceSession>("GET", `/voice-agent/admin/sessions/${id}`);
+  request<VoiceSession>("GET", `/consultations/admin/ai-chat/sessions/${id}`);
 
 // ── Salomat Audit ─────────────────────────────────────────────────────────────
 

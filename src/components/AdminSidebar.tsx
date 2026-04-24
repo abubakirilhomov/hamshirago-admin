@@ -50,7 +50,7 @@ const navItems = [
   { title: "Отчёты", url: "/reports", icon: BarChart2 },
   { title: "Аналитика", url: "/analytics", icon: PieChart },
   { title: "AI Ассистент", url: "/ai-chat", icon: Bot },
-  { title: "Голосовой агент", url: "/voice-agent", icon: Mic },
+  { title: "Salomat — триаж", url: "/voice-agent", icon: Mic },
   { title: "User Support", url: "/user-support", icon: HeartPulse },
   { title: "Отзывы", url: "/reviews", icon: Star },
   { title: "Консультации", url: "/consultations", icon: MessageSquare },

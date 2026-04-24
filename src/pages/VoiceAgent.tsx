@@ -160,7 +160,7 @@ const VoiceAgent = () => {
             <Mic size={22} />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Голосовой агент</h1>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Salomat — триаж</h1>
             <p className="text-sm text-slate-500">AI консультант — статистика и сессии</p>
           </div>
         </div>
