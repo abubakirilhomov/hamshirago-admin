@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Bug, CheckCircle2, Clock3, XCircle, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Bug, CheckCircle2, Clock3, XCircle, AlertTriangle, ClipboardList } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "ALL", label: "Все статусы" },
@@ -111,6 +111,28 @@ async function handleStatusChange(id: string, status: string) {
       toast.error("Ошибка обновления статуса");
     } finally {
       setUpdatingId(null);
+    }
+  }
+
+  async function handleAddToTask(err: ClientError) {
+    const app = APP_LABELS[err.appType ?? ""] ?? err.appType ?? "unknown";
+    const code = err.errorCode ? `[${err.errorCode}] ` : "";
+    const msg = err.message?.slice(0, 120) ?? "Unknown error";
+    const url = err.url ? ` | \`${err.url}\`` : "";
+    const count = err.count && err.count > 1 ? ` | x${err.count} повторений` : "";
+    const date = new Date(err.createdAt).toISOString().slice(0, 10);
+
+    const taskLine = `- [ ] **[BUG][${app}]** ${code}${msg}${url}${count} — UserSupport \`${err.id}\` (${date})`;
+
+    try {
+      await navigator.clipboard.writeText(taskLine);
+      toast.success("Задача скопирована в буфер — вставьте в docs/tasks.md", { duration: 4000 });
+    } catch {
+      toast.error("Не удалось скопировать — скопируйте вручную");
+    }
+
+    if (err.status === "NEW") {
+      await handleStatusChange(err.id, "IN_PROGRESS");
     }
   }
 
@@ -365,6 +387,21 @@ async function handleStatusChange(id: string, status: string) {
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Дата</p>
                 <p className="text-xs">{new Date(selected.createdAt).toLocaleString("ru-RU")}</p>
+              </div>
+
+              <div className="pt-2 border-t border-border">
+                <Button
+                  className="w-full gap-2"
+                  variant="outline"
+                  onClick={() => handleAddToTask(selected)}
+                  disabled={updatingId === selected.id}
+                >
+                  <ClipboardList className="h-4 w-4 text-blue-500" />
+                  Добавить в задачи (tasks.md)
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-1">
+                  Копирует строку задачи · статус → В работе
+                </p>
               </div>
             </div>
           )}
