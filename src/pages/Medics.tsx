@@ -99,7 +99,7 @@ const Medics = () => {
       setMedics((prev) =>
         prev.map((m) =>
           m.id === topupTarget.id
-            ? { ...m, balance: Number(m.balance) + amount }
+            ? { ...m, balance: Number(m.balance ?? 0) + amount }
             : m
         )
       );
@@ -372,7 +372,7 @@ const Medics = () => {
               <p className="text-sm text-muted-foreground">
                 Текущий баланс:{" "}
                 <span className="font-semibold text-foreground">
-                  {Number(topupTarget.balance).toLocaleString("ru-RU")} UZS
+                  {Number(topupTarget.balance ?? 0).toLocaleString("ru-RU")} UZS
                 </span>
               </p>
               <div className="space-y-2">
