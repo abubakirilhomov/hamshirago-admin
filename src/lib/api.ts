@@ -299,11 +299,12 @@ export const updateSettings = (data: Partial<AppSettings>) =>
 export interface ClientError {
   id: string;
   message: string;
-  stack?: string | null;
+  stacktrace?: string | null;
   errorCode?: string | null;
   userId?: string | null;
   appType?: string | null;
   appVersion?: string | null;
+  screen?: string | null;
   url?: string | null;
   deviceInfo?: string | null;
   status: string;
@@ -318,10 +319,17 @@ export interface ClientErrorStats {
   IGNORED: number;
 }
 
+export interface ClientErrorsPage {
+  data: ClientError[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const getClientErrors = (params: { page?: number; limit?: number; status?: string }) => {
   const q = new URLSearchParams({ page: String(params.page ?? 1), limit: String(params.limit ?? 20) });
   if (params.status) q.set("status", params.status);
-  return request<PaginatedResponse<ClientError>>("GET", `/client-errors/admin?${q}`);
+  return request<ClientErrorsPage>("GET", `/client-errors/admin?${q}`);
 };
 
 export const updateClientErrorStatus = (id: string, status: string) =>

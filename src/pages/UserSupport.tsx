@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getClientErrors, updateClientErrorStatus, getClientErrorStats, type ClientError, type ClientErrorStats } from "@/lib/api";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,12 +26,51 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   IGNORED:     { label: "Игнорируется", color: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" },
 };
 
-const APP_LABELS: Record<string, string> = {
-  mobile: "Mobile",
-  web: "Web",
-  "web-medic": "Web Medic",
-  medic: "Medic",
+const APP_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
+  mobile:     { label: "Mobile",    emoji: "📱", color: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
+  web:        { label: "Web",       emoji: "🌐", color: "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300" },
+  "web-medic":{ label: "Web Medic", emoji: "🏥", color: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300" },
+  medic:      { label: "Medic App", emoji: "🩺", color: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
 };
+
+function AppTypeBadge({ appType, screen }: { appType?: string | null; screen?: string | null }) {
+  const info = APP_LABELS[appType ?? ""];
+
+  if (info) {
+    return (
+      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${info.color}`}>
+        <span>{info.emoji}</span>
+        <span>{info.label}</span>
+      </span>
+    );
+  }
+
+  // appType yo'q — screen yoki raw value ko'rsat
+  const fallback = screen
+    ? screen.split("/").filter(Boolean).slice(-2).join(" / ")
+    : appType ?? null;
+
+  if (!fallback) {
+    return <span className="text-xs text-muted-foreground italic">noma'lum</span>;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 max-w-[120px] truncate cursor-default">
+            <span>❓</span>
+            <span className="truncate">{fallback}</span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs">appType yo'q</p>
+          {screen && <p className="text-xs font-mono text-muted-foreground">{screen}</p>}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 export default function UserSupport() {
   const [errors, setErrors] = useState<ClientError[]>([]);
@@ -89,7 +129,7 @@ export default function UserSupport() {
           status: statusFilter === "ALL" ? undefined : statusFilter,
         });
         setErrors(data.data);
-        setTotalPages(data.totalPages);
+        setTotalPages(Math.ceil(data.total / (data.limit || 20)));
         setTotal(data.total);
       }
     } catch {
@@ -241,9 +281,7 @@ async function handleStatusChange(id: string, status: string) {
                     {err.userId ? err.userId.slice(0, 8) + "..." : "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {APP_LABELS[err.appType ?? ""] ?? err.appType ?? "—"}
-                    </Badge>
+                    <AppTypeBadge appType={err.appType} screen={err.screen} />
                   </TableCell>
                   <TableCell className="text-sm font-semibold">
                     {err.count ?? 1}
@@ -341,38 +379,42 @@ async function handleStatusChange(id: string, status: string) {
                 <p className="bg-muted px-3 py-2 rounded text-xs">{selected.message}</p>
               </div>
 
-              {selected.stack && (
+              {selected.stacktrace && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Stack trace</p>
                   <pre className="bg-slate-950 text-green-400 text-xs p-3 rounded overflow-x-auto whitespace-pre-wrap break-all max-h-40">
-                    {selected.stack}
+                    {selected.stacktrace}
                   </pre>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <p className="text-muted-foreground mb-1">Приложение</p>
+                  <AppTypeBadge appType={selected.appType} screen={selected.screen} />
+                </div>
                 {selected.userId && (
                   <div>
                     <p className="text-muted-foreground mb-1">User ID</p>
                     <p className="font-mono">{selected.userId}</p>
                   </div>
                 )}
-                {selected.appType && (
-                  <div>
-                    <p className="text-muted-foreground mb-1">Приложение</p>
-                    <p>{APP_LABELS[selected.appType] ?? selected.appType}</p>
+                {selected.screen && (
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground mb-1">Экран / Route</p>
+                    <p className="font-mono bg-muted px-2 py-1 rounded break-all">{selected.screen}</p>
+                  </div>
+                )}
+                {selected.url && (
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground mb-1">URL</p>
+                    <p className="font-mono bg-muted px-2 py-1 rounded break-all">{selected.url}</p>
                   </div>
                 )}
                 {selected.appVersion && (
                   <div>
                     <p className="text-muted-foreground mb-1">Версия</p>
                     <p>{selected.appVersion}</p>
-                  </div>
-                )}
-                {selected.url && (
-                  <div>
-                    <p className="text-muted-foreground mb-1">URL</p>
-                    <p className="truncate">{selected.url}</p>
                   </div>
                 )}
               </div>
