@@ -155,7 +155,7 @@ async function handleStatusChange(id: string, status: string) {
   }
 
   async function handleAddToTask(err: ClientError) {
-    const app = APP_LABELS[err.appType ?? ""] ?? err.appType ?? "unknown";
+    const app = APP_LABELS[err.appType ?? ""]?.label ?? err.appType ?? "unknown";
     const code = err.errorCode ? `[${err.errorCode}] ` : "";
     const msg = err.message?.slice(0, 120) ?? "Unknown error";
     const url = err.url ? ` | \`${err.url}\`` : "";
